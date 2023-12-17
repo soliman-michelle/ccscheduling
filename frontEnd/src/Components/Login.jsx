@@ -17,7 +17,7 @@ const LogIn = () => {
     const token = document.cookie.split('; ').find(row => row.startsWith('token='));
   
     if (token) {
-      navigate('/'); // Redirect to home if token exists
+      navigate('/'); 
     }
   }, [navigate]);
   
