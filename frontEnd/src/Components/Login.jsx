@@ -42,11 +42,11 @@ const LogIn = () => {
     }
   
     if (Object.keys(errors).length === 0) {
-      axios.post('https://ccsched-5edizmrl7-michelle-solimans-projects.vercel.app/userlogin', values)
+      axios.post('https://ccsched.vercel.app/userlogin', values)
       .then((res) => {
         if (res.data.Status === 'Success') {
           // Fetch user data based on the userId
-          axios.get(`https://ccsched-5edizmrl7-michelle-solimans-projects.vercel.app/loginuserdata/${username}`)
+          axios.get(`https://ccsched.vercel.app/loginuserdata/${username}`)
             .then((response) => {
               // Store user data in local storage or state management
               localStorage.setItem('userData', JSON.stringify(response.data));
