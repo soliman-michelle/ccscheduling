@@ -20,10 +20,11 @@
       const app = express();
       app.use(express.json());
       app.use(cors({
-          origin: ["http://localhost:3000"],
-          methods: ["POST", "GET"],
-          credentials: true
+        origin: ["http://localhost:3000", "https://ccscheduling.vercel.app"], // Add your Vercel app URL here
+        methods: ["POST", "GET"],
+        credentials: true
       }));
+      
       app.use(cookieParser());
       app.use('/uploads', express.static('uploads'));
 
