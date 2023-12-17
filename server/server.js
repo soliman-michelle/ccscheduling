@@ -13,7 +13,7 @@
     const app = express();
     app.use(express.json());
     app.use(cors({
-      origin: ["http://localhost:3000", "http://ccsched-michelle-solimans-projects.vercel.app"],
+      origin: ["http://localhost:3000", "https://ccscheduling.vercel.app"],
       methods: ["POST", "GET"],
       credentials: true
     }));
@@ -217,7 +217,7 @@
         }
       
         // Generate a reset link with the token
-        const resetLink = `http://localhost:3000/password-reset/${tokenResult.token}`;
+        const resetLink = `https://ccscheduling.vercel.app/password-reset/${tokenResult.token}`;
       
         // Send the reset password email
         await sendResetPasswordEmail(recipientEmail, resetLink);
@@ -388,7 +388,7 @@
     });
 
     app.get('/user', (req, res) => {
-        db.query("SELECT user_id, firstName, middleName, lastName, email, CONCAT('http://localhost:8081/', images) AS imageUrl, role FROM userdata", (err, data) => {
+        db.query("SELECT user_id, firstName, middleName, lastName, email, CONCAT('https://ccscheduling.vercel.app/', images) AS imageUrl, role FROM userdata", (err, data) => {
             if(err) {
                 return res.json(err);
             }

@@ -42,11 +42,11 @@ const LogIn = () => {
     }
   
     if (Object.keys(errors).length === 0) {
-      axios.post('http://ccsched-michelle-solimans-projects.vercel.app:8081/userlogin', values)
+      axios.post('https://ccscheduling.vercel.app/userlogin', values)
       .then((res) => {
         if (res.data.Status === 'Success') {
           // Fetch user data based on the userId
-          axios.get(`http://localhost:8081/userdata/${username}`)
+          axios.get(`https://ccscheduling.vercel.app/userdata/${username}`)
             .then((response) => {
               // Store user data in local storage or state management
               localStorage.setItem('userData', JSON.stringify(response.data));
