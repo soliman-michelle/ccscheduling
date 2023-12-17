@@ -42,7 +42,7 @@ const LogIn = () => {
     }
   
     if (Object.keys(errors).length === 0) {
-      axios.post('http://localhost:8081/userlogin', values)
+      axios.post('https://ccsched.vercel.app/userlogin', values)
       .then((res) => {
         if (res.data.Status === 'Success') {
           // Fetch user data based on the userId
