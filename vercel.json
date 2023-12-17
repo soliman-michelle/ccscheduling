@@ -6,7 +6,7 @@
             "use": "@vercel/node"
         }
     ],
-    "Components": [
+    "server": [
     {
         "src": "/(.*)",
         "dest": "/"
