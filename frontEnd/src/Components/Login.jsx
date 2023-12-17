@@ -68,13 +68,13 @@ const LogIn = () => {
       setErrors(errors);
     }
   };
-  const backgroundStyle = {
-    backgroundImage: 'url("background.png")', // Specify the URL as a string
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    minHeight: '100vh',
-    minWidth: '100vw',
-  };
+  // const backgroundStyle = {
+  //   backgroundImage: 'url("background.png")', // Specify the URL as a string
+  //   backgroundSize: 'cover',
+  //   backgroundRepeat: 'no-repeat',
+  //   minHeight: '100vh',
+  //   minWidth: '100vw',
+  // };
 
   const labelStyle = {
     fontWeight: '600', // Make the labels bold
@@ -82,7 +82,7 @@ const LogIn = () => {
   };
 
   return (
-    <div className="container" style={backgroundStyle}>
+    <div className="container">
       <div className="row justify-content-center align-items-center" >
         <div className="col-md-7">
           <h2 className="display-3 text-center text-white mb-1"><b>CCSched</b></h2>
