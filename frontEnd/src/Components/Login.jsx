@@ -42,11 +42,11 @@ const LogIn = () => {
     }
   
     if (Object.keys(errors).length === 0) {
-      axios.post('https://ccsched.vercel.app/userlogin', values)
+      axios.post('https://ccsched.vercel.app:8081/userlogin', values)
       .then((res) => {
         if (res.data.Status === 'Success') {
           // Fetch user data based on the userId
-          axios.get(`https://ccsched.vercel.app/userdata/${username}`)
+          axios.get(`https://ccsched.vercel.app:8081/userdata/${username}`)
             .then((response) => {
               // Store user data in local storage or state management
               localStorage.setItem('userData', JSON.stringify(response.data));
