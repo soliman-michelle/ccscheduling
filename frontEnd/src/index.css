@@ -1,0 +1,71 @@
+.custom-dropdown-toggle {
+    background-color: transparent !important;
+  }
+  
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+  }
+  
+  .pagination-container li {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #007BFF;
+    color: black;
+    cursor: pointer;
+  }
+  
+  .pagination-container li.active {
+    background-color: #fff;
+    color: #007BFF;
+  }
+  
+  .pagination-container li:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+  }
+  
+  /* Add these styles to your CSS file or React component */
+  .schedule-table {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .time-header {
+    display: flex;
+  }
+  
+  .empty-cell,
+  .day-cell {
+    flex: 1;
+    border: 1px solid #ccc;
+    text-align: center;
+  }
+  
+  .time-slot-row {
+    display: flex;
+  }
+  
+  .time-cell {
+    flex: 1;
+    border: 1px solid #ccc;
+    padding: 1px;
+    text-align: center;
+  }
+  
+  .schedule-cell {
+    flex: 1;
+    border: 0.2px solid #ccc;
+    padding: 1px;
+  }
+  .schedule-cell:not(:last-child) {
+    border-right: 1px solid #ccc;
+  }
+  
+  .schedule-cell.no-border {
+    border: none; /* Remove borders within the specified time range */
+  }
+  
