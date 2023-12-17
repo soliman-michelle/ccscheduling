@@ -13,10 +13,11 @@
     const app = express();
     app.use(express.json());
     app.use(cors({
-        origin: ["http://localhost:3000"],
-        methods: ["POST", "GET"],
-        credentials: true
+      origin: ["http://localhost:3000", "https://ccsched-michelle-solimans-projects.vercel.app"],
+      methods: ["POST", "GET"],
+      credentials: true
     }));
+    
     app.use(cookieParser());
     app.use('/uploads', express.static('uploads'));
 
