@@ -21,11 +21,12 @@
     app.use('/uploads', express.static('uploads'));
 
     const db = mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DBNAME
-  });
+        host: "localhost",
+        user: "root",
+        password: "",
+        database: "scheduling"
+    });
+
     const storage = multer.diskStorage({
       destination: function (req, file, cb) {
           cb(null, './uploads');
@@ -315,6 +316,7 @@
       }
     });
     
+
     const getUserData = (username) => {
       return new Promise((resolve, reject) => {
         db.query('SELECT password FROM userlogin WHERE username = ?', [username], (err, userData) => {
