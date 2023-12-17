@@ -1,6 +1,6 @@
 {
   "name": "server",
-  "homepage": "",
+  "homepage": "https://ccscheduling-system.vercel.app/",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
