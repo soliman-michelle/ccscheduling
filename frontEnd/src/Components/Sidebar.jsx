@@ -93,7 +93,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   {/* Sidebar Links */}
                   <ul className="nav flex-column mt-4">
                     <li className="nav-item">
-                      <a className="nav-link" href="/home/" style={linkStyle}>
+                      <a className="nav-link" href="/" style={linkStyle}>
                         <FaHome style={icons} />
                         <span style={textDisplayStyle}>Home</span>
                       </a>

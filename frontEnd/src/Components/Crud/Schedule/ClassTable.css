@@ -1,0 +1,31 @@
+.schedule-table {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .time-header {
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .time-cell,
+  .day-cell {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-right: 1px solid #ddd;
+  }
+  
+  .class-cell {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .class-item {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+  

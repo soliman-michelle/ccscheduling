@@ -20,8 +20,8 @@
       const app = express();
       app.use(express.json());
       app.use(cors({
-        origin: ["http://localhost:3000", "https://ccscheduling.vercel.app"],
-        methods: ["POST", "GET"],
+        origin: 'http://localhost:3000',
+        methods: ['GET', 'POST', 'PUT', 'DELETE'],
         credentials: true
       }));
       
@@ -403,17 +403,57 @@
           });
       });
 
-      app.get("/user/check/:firstName/:lastName", (req, res) => {
-          const firstName = req.params.firstName;
-          const lastName = req.params.lastName;
-
-          db.query("SELECT * FROM userdata WHERE firstName = ? AND lastName = ?", [firstName, lastName], (err, data) => {
-              if (err){
-                  return res.json(err);
+      // Check if a user with the given email, username, and name exists
+      app.get("/user/check/:email/:username/:firstName/:lastName", (req, res) => {
+        const email = req.params.email;
+        const username = req.params.username;
+        const firstName = req.params.firstName;
+        const lastName = req.params.lastName;
+      
+        // Assuming there is a common field like user_id that links both tables
+        const query = `
+          SELECT * FROM userlogin AS ul
+          JOIN userdata AS ud ON ul.user_id = ud.user_id
+          WHERE ul.username = ? OR ud.email = ? OR (ud.firstName = ? AND ud.lastName = ?)
+        `;
+      
+        db.query(
+          query,
+          [username, email, firstName, lastName],
+          (err, data) => {
+            if (err) {
+              return res.json(err);
+            }
+      
+            const existingUser = data[0];
+      
+            if (existingUser) {
+              let warnings = [];
+      
+              if (existingUser.email === email) {
+                warnings.push("Email already exists.");
               }
-              return res.json({exists: data.length > 0 });
-          });
+      
+              if (existingUser.username === username) {
+                warnings.push("Username already exists.");
+              }
+      
+              if (
+                existingUser.firstName === firstName &&
+                existingUser.lastName === lastName
+              ) {
+                warnings.push("User with the same name already exists.");
+              }
+      
+              return res.json({ exists: true, warnings });
+            }
+      
+            return res.json({ exists: false });
+          }
+        );
       });
+      
+
 
       app.get('/user/roles', (req, res) => {
           db.query("SELECT * FROM role WHERE role_id IN (1, 2)", (err, data) => {
@@ -617,6 +657,585 @@
           });
         });
 
-      app.listen(8081, () => {
-          console.log("Running...");
+        app.get("/rooms", (req, res) => {
+          const sql = "SELECT * FROM room ORDER BY roomName ASC";
+          db.query(sql, (err, data) => {
+            if (err) {
+              console.log(err);
+              return res.json(err);
+            }
+            return res.json(data);
+          });
+        });        
+      
+     // Check if a room exists with the given name (after removing spaces and special characters)
+      app.get("/rooms/check/:roomName", (req, res) => {
+        const originalRoomName = req.params.roomName;
+        const normalizedRoomName = originalRoomName.replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters
+        const normalizedRoomNameWithoutSpaces = normalizedRoomName.replace(/\s+/g, ''); // Remove spaces
+
+        db.query("SELECT * FROM room WHERE REPLACE(roomName, ' ', '') = ?", [normalizedRoomNameWithoutSpaces], (err, data) => {
+          if (err) {
+            console.log(err);
+            return res.json(err);
+          }
+          return res.json({ exists: data.length > 0 });
+        });
       });
+
+      //add new room
+      app.post("/rooms/create", (req, res) => {
+          const id = req.body.id;
+          const roomName = req.body.roomName;
+          const location = req.body.location;
+          const capacity = req.body.capacity;
+          const type = req.body.type;
+          db.query("INSERT INTO room (roomName, location, capacity, type) VALUES (?, ?, ?, ?)", [roomName, location, capacity, type], (err, result) => {
+              if(err){
+                  console.log(err);   
+              } res.send("Added Succesfully!");
+          });
+      });
+      
+      //update 
+      app.put("/rooms/:id/update", (req, res) => {
+          const roomId = req.params.id;
+          const sql = "UPDATE room SET `roomName` = ? , `location` = ? , `capacity` = ?, `type` = ? WHERE id = ?";
+          const values = [
+              req.body.roomName,
+              req.body.location,
+              req.body.capacity,
+              req.body.type,
+              roomId
+          ];
+          db.query(sql, values, (err, data) => {
+              if(err){
+                  console.log(err);
+                  return res.send(err);
+              } else {
+                  console.log(data);
+                  return res.json(data);
+              }
+          });
+      });
+      
+      //delete existing room
+      app.delete("/rooms/:id/delete", (req, res) => {
+          const roomId = req.params.id;
+          db.query("DELETE FROM room WHERE id = ?", [roomId], (err, result) => {
+              if(err){
+                  return res.send(err);
+              }else {
+                  return res.send(result);
+              }
+          });
+      });
+
+      // View all block list
+    app.get("/block", (req, res) => {
+      const sql = "SELECT * FROM blocks";
+      db.query(sql, (err, data) =>{
+          if(err){
+            console.log(err);
+            return res.json(err);
+          }
+            return res.json(data);
+        });
+    });
+
+    // Check if a room exists with the given name
+    app.get("/block/check/:program", (req, res) => {
+      const program = req.params.program;
+      db.query("SELECT * FROM blocks WHERE program = ?", [program], (err, data) => {
+        if (err) {
+          console.log(err);
+          return res.json(err);
+        }
+        return res.json({ exists: data.length > 0 });
+      });
+    });
+
+  // view all specific block per year and per program
+    app.get("/block/wh_blk", (req, res) => {
+      const sql = "SELECT * FROM wh_blk";
+      db.query(sql, (err, data) => {
+          if (err) {
+              console.log(err);
+              return res.json(err);
+          }
+          return res.json(data);
+      });
+    });
+
+  //add new room
+  app.post("/block/create", (req, res) => {
+    const program = req.body.program;
+    const firstYear = req.body.firstYear;
+    const secondYear = req.body.secondYear;
+    const thirdYear = req.body.thirdYear;
+    const fourthYear = req.body.fourthYear;
+    const total = req.body.total;
+    db.query("INSERT INTO blocks (program, firstYear, secondYear, thirdYear, fourthYear, total) VALUES (?, ?, ?, ?, ?, ?)", [program, firstYear, secondYear, thirdYear, fourthYear, total], (err, result) => {
+        if(err){
+            console.log(err);   
+        } res.send(result);
+    });
+  });
+
+  //update 
+  app.put("/block/:id/update", (req, res) => {
+    const blockId = req.params.id;
+    const sql = "UPDATE blocks SET `program` = ?, `firstYear` = ?, `secondYear` = ?, `thirdYear` = ?, `fourthYear` = ?, `total` = ? WHERE id = ?";
+    const values = [
+        req.body.program,
+        req.body.firstYear,
+        req.body.secondYear,
+        req.body.thirdYear,
+        req.body.fourthYear,
+        req.body.total,
+        blockId
+    ];
+    db.query(sql, values, (err, data) => {
+        if(err){
+            console.log(err);
+            return res.send(err);
+        } else {
+            console.log(data);
+            return res.json(data);
+        }
+    });
+  });
+
+  //delete existing room
+  app.delete("/block/:id/delete", (req, res) => {
+    const blockId = req.params.id;
+    db.query("DELETE FROM blocks WHERE id = ?", [blockId], (err, result) => {
+        if(err){
+            return res.send(err);
+        }else {
+            console.log("Received blockId: " + blockId);
+            return res.send(result);
+        }
+    });
+  });
+
+  // View all specialization
+  app.get('/specialization', (req, res) => {
+    const sql = `
+    SELECT
+    s.User_id,
+    GROUP_CONCAT(DISTINCT c.course_id ORDER BY c.course_id) AS course_ids,
+    GROUP_CONCAT(DISTINCT c.course_code ORDER BY c.course_id) AS course_codes,
+    GROUP_CONCAT(DISTINCT c.course_name ORDER BY c.course_id) AS course_names,
+    GROUP_CONCAT(DISTINCT c.duration ORDER BY c.course_id) AS durations,
+    GROUP_CONCAT(DISTINCT u.fname ORDER BY c.course_id) AS fnames,
+    GROUP_CONCAT(DISTINCT u.lname ORDER BY c.course_id) AS lnames
+FROM specialization s
+INNER JOIN courses c ON s.course_id = c.course_id
+INNER JOIN users u ON s.User_id = u.User_id
+GROUP BY s.User_id;
+    
+    `;  
+  
+    db.query(sql, (err, data) => {
+      if (err) {
+        return res.json(err);
+      } else {
+        return res.json(data);
+      }
+    });
+  });
+
+  app.get('specialization/course/:User_id', (req, res) => {
+    const User_id = req.params.User_id;
+    const sql = `
+    SELECT s.*, c.course_code, c.course_name, u.fname, u.lname
+    FROM specialization s
+    JOIN courses c ON s.course_id = c.course_id
+    JOIN users u ON s.User_id = u.User_id
+    WHERE s.User_id = ?;
+
+    `;  
+  
+    db.query(sql, [User_id], (err, data) => {
+      if (err) {
+        return res.json(err);
+      } else {
+        return res.json(data);
+      }
+    });
+  });
+app.get('specialization/users', (req, res) => {
+  db.query("SELECT User_id, fname, lname, role FROM users", (err, data) => {
+      if (err) {
+      return res.status(500).json({ error: "Failed to retrieve user data" });
+    } else {
+      return res.json(data);
+    }
+  });
+});
+
+app.get('specialization/courses', (req, res) => {
+  const userRole = req.query.userRole;
+
+  let sql = `
+    SELECT course_id, course_code, course_name
+    FROM courses
+  `;
+
+  if (userRole === '1') {
+    // If the user's role is 1, filter courses with duration <= 3
+    sql += ' WHERE duration <= 3';
+  }
+
+  db.query(sql, (err, data) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to retrieve course data" });
+    } else {
+      return res.json(data);
+    }
+  });
+});
+
+// add
+app.post("specialization/create", (req, res) => {
+const User_id = req.body.User_id; // Use lowercase 'user_id'
+const course_id = req.body.course_id;
+  console.log('Received user_id:', User_id);
+  console.log('Received id:', course_id);
+  db.query("INSERT INTO specialization (User_id, course_id) VALUES (?, ?)", [User_id, course_id], (err, data) => {
+    if (err) {
+        console.error('Error:', err);
+        return res.status(500).json({ error: "Failed to insert specialization" });
+    } else {
+        res.send(data);
+    }
+});  
+});
+
+app.get('specialization/unassigned-courses', (req, res) => {
+const sql = `
+  SELECT *
+  FROM courses
+  WHERE course_id NOT IN (
+      SELECT DISTINCT course_id
+      FROM specialization
+  );
+`;
+
+db.query(sql, (err, data) => {
+  if (err) {
+    return res.status(500).json({ error: "Failed to retrieve unassigned course data" });
+  } else {
+    return res.json(data);
+  }
+});
+});
+
+app.get('specialization/assign', (req, res) => {
+const sql = `
+SELECT 
+  c.course_code,
+  c.course_name,
+  COUNT(DISTINCT pcm.course_id, pcm.program, pcm.year, pcm.block) as total_blocks,
+  COUNT(DISTINCT s.User_id) as professors 
+FROM program_course_assignment_reference pcm
+INNER JOIN specialization s ON pcm.course_id = s.course_id
+INNER JOIN courses c ON pcm.course_id = c.course_id
+GROUP BY pcm.course_id, c.course_code, c.course_name
+HAVING total_blocks > 3 AND professors <= 2;
+
+`;
+
+db.query(sql, (err, data) => {
+  if (err) {
+    return res.status(500).json({ error: "Failed to retrieve unassigned course data" });
+  } else {
+    return res.json(data);
+  }
+});
+});
+
+app.get("specialization/check/:name/:course", (req, res) => {
+const name = req.params.User_id;
+const course = req.params.course_id;
+db.query("SELECT * FROM specialization WHERE User_id = ? AND course_id = ?", [name, course], (err, data) => {
+  if (err) {
+    console.log(err);
+    return res.json(err);
+  }
+  return res.json({ exists: data.length > 0 });
+});
+});
+
+//update
+app.put("specialization/:id/update", (req, res) => {
+  const specializationId = req.params.id;
+  const sql = "UPDATE specialization SET `prof` = ?, `specialization` = ? WHERE id = ?";
+  const values = [
+      req.body.name, // Change to 'name' to match your form
+      req.body.course, // Change to 'course' to match your form
+      specializationId
+  ];
+  
+  db.query(sql, [...values, specializationId], (err, data) => {
+      if(err){
+          res.status(500).json({ error: "Failed to update specialization" });
+      } else {
+          res.status(200).json({ message: "Specialization updated successfully" });
+      }
+  });
+});
+
+
+// delete
+app.delete("specialization/:userId/:courseId/delete", async (req, res) => {
+const { userId, courseId } = req.params;
+
+try {
+  // Delete records from program_course_assignment_reference
+  await db.query(
+    "DELETE FROM program_course_assignment_reference WHERE User_id = ? AND course_id = ?",
+    [userId, courseId]
+  );
+
+  // Once the associated records are deleted, proceed to delete from specialization
+  await db.query(
+    "DELETE FROM specialization WHERE course_id = ? AND User_id = ?",
+    [courseId, userId]
+  );
+
+  return res.status(200).send(`Specialization with Course ID ${courseId} for User ${userId} deleted successfully`);
+} catch (error) {
+  return res.status(500).send(error);
+}
+});
+
+// View all course list
+app.get("/course", (req, res) => {
+  const sql = "SELECT * from courses";
+  db.query(sql, (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    }
+    return res.json(data);
+  });
+});
+
+app.get("course/year/:course_id", (req, res) => {
+  const course_id = req.params.course_id;
+  const sql = "SELECT pca.program, pca.year_level, pca.blocks FROM courses AS c INNER JOIN program_course_mapping AS pca ON c.course_id = pca.course_id WHERE c.course_id = ?";
+  db.query(sql, [course_id], (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+    return res.json(data);
+  });
+});
+
+// check duplicate course
+app.get("course/check/:course_code/:course_name", (req, res) => {
+  const course_code = req.params.course_code;
+  const course_name = req.params.course_name;
+
+  db.query("SELECT * FROM courses WHERE course_code = ? AND course_name = ?", [course_code, course_name] ,(err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    }
+    return res.json({ exists: data.length > 0 }); // Check if any data was fetched
+  });
+});
+
+//get all program
+app.get("course/program", (req, res) => {
+  const sql = "SELECT program from blocks";
+  db.query(sql, (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    }
+    return res.json(data);
+  });
+});
+
+//add new course
+app.post("course/create", (req, res) => {
+const code = req.body.course_code;
+const name = req.body.course_name;
+const units = req.body.units;
+let program = req.body.program;
+if (Array.isArray(program)) {
+program = program.join(',');
+}
+const yearLevel = req.body.yearLevel;
+const sem = req.body.sem;
+const duration = req.body.duration;
+const ftf = req.body.ftf;
+const online = req.body.online;
+const lab = req.body.lab;
+
+const sql = "CALL CalculateAndInsertBlocks(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+db.query(
+  sql,
+  [code, name, units, program, yearLevel, sem, duration, ftf, online, lab],
+  (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    }
+    return res.send(result);
+  }
+);
+});
+
+//update 
+app.put("course/update/:courseId", (req, res) => {
+const courseId = req.params.courseId;
+const {
+  course_code,
+  course_name,
+  units,
+  sem,
+  duration,
+  ftf,
+  online,
+  lab,
+  program, 
+  yearLevel 
+} = req.body;
+
+const sql = "CALL CalculateAndInsertBlocks(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";;
+
+db.query(
+  sql,
+  [course_code, course_name, units, sem, duration, ftf, online, lab, program, yearLevel, courseId],
+  (err, result) => {
+    if (err) {
+      console.error("Error updating course:", err);
+      res.status(500).send("Error updating course");
+    } else {
+      console.log("Course updated successfully");
+
+      // Update program_course_mapping
+      updateProgramCourseMapping(courseId, programs, yearLevel, res);
+    }
+  }
+);
+});
+
+app.delete("course/:course_id/delete", (req, res) => {
+const courseId = req.params.course_id;
+
+db.query("DELETE FROM program_course_mapping WHERE course_id = ?", [courseId], (err, mappingResult) => {
+    if (err) {
+        return res.send(err);
+    } else {
+        db.query("DELETE FROM block_course_assignment WHERE course_id = ?", [courseId], (err, assignmentResult) => {
+            if (err) {
+                return res.send(err);
+            } else {
+                db.query("DELETE FROM courses WHERE course_id = ?", [courseId], (err, courseResult) => {
+                    if (err) {
+                        return res.send(err);
+                    } else {
+                        return res.send({
+                            mappingResult,
+                            assignmentResult,
+                            courseResult
+                        });
+                    }
+                });
+            }
+        });
+    }
+});
+});
+
+app.get('/profs', (req, res) => {
+  db.query('SELECT * FROM users', (err, data) =>{
+      if(err){
+          return res.json(err);
+      }else {
+          return res.json(data);
+      }
+  });
+});
+
+app.get('/profs/roles', (req, res) => {
+  const roleId = req.params.roleId;
+  const sql = 'SELECT * FROM role';
+  db.query(sql, [roleId], (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: 'An error occurred while fetching role data' });
+    }
+    return res.json(data);
+  });
+});
+
+app.get('/profs/roles/:roleId', (req, res) => {
+  const roleId = req.params.roleId;
+  const sql = 'SELECT role FROM role WHERE role_id = ?';
+  db.query(sql, [roleId], (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({ error: 'An error occurred while fetching role data' });
+    }
+    return res.json(data);
+  });
+});
+
+app.post('profs/create', (req, res) =>{
+  const fname = req.body.fname;
+  const mname = req.body.mname;
+  const lname = req.body.lname;
+  const role = req.body.role;
+  db.query("INSERT INTO users (fname, mname, lname, role) VALUES (?, ?, ?, ?)", [fname, mname, lname, role], (err, data) => {
+      if(err){
+          console.log(err);
+          return res.send(err);
+      } else {
+          return res.send(data);
+      }
+  });
+});
+
+app.put("profs/:id/update", (req, res) => {
+  const userId = req.params.id;
+  const sql = "UPDATE users SET `fname` = ?, `mname` = ?, `lname `= ?, `role` = ? WHERE user_id = ? ";
+  const values = [
+      req.body.fname,
+      req.body.mname,
+      req.body.lname,
+      req.body.role,
+      userId
+  ];
+  db.query(sql, values, (err, data) => {
+      if(err){
+          return res.send(err);
+      }else {
+          return res.json(data);
+      }
+  });
+});
+
+app.delete('profs/:user_id/delete', (req, res) => {
+  const userId = req.params.user_id; 
+  db.query("DELETE FROM users WHERE User_id = ?", [userId], (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'An error occurred while deleting the user' });
+    } else {
+      console.log(`User with ID ${userId} deleted successfully`);
+      return res.json({ message: 'User deleted successfully' });
+    }
+  });
+});
+
+
+  app.listen(8081, () => {
+      console.log("Running...");
+  });

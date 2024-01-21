@@ -4,9 +4,8 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.css';
 import { faPlus} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types'; // Import PropTypes
 
-const AddAccount = ({ show, handleClose, handleAdd }) => {
+const AddUser = ({ show, handleClose, handleAdd }) => {
   const [firstName, setFirstName] = useState('');
   const [middleName, setMiddleName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -18,73 +17,74 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
   const [images, setImages] = useState(null); // Use null to initialize images
   const [errors, setErrors] = useState({});
   const [showAlert, setShowAlert] = useState(false);
+  const [error, setError] = useState('');
   const [showUserExistsAlert, setShowUserExistsAlert] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false); // State for success alert
   
   const handleFormSubmit = async () => {
     // Validate required fields
-    const error = {};
+    const newErrors = {};
 
   if (!firstName) {
-    error.firstName = 'Please enter First Name';
+    newErrors.firstName = 'Please enter First Name';
     setErrors('All fields are required.');  
   }
 
   if (!/^[a-zA-Z\s-]*$/.test(firstName)) {
-    error.firstName = 'First Name cannot contain special characters or numbers except "-"';
+    newErrors.firstName = 'First Name cannot contain special characters or numbers except "-"';
     setShowAlert(true);
   }
   if (!middleName) {
-    error.middleName = 'Please enter Middle Name';
+    newErrors.middleName = 'Please enter Middle Name';
   }
   if (!/^[a-zA-Z\s-]*$/.test(middleName)) {
-    error.middleName = 'Middle Name cannot contain special characters or numbers except "-"';
+    newErrors.middleName = 'Middle Name cannot contain special characters or numbers except "-"';
     setShowAlert(true);
   }
 
   if (!lastName) {
-    error.lastName = 'Please enter Last Name';
+    newErrors.lastName = 'Please enter Last Name';
   }
   if (!/^[a-zA-Z\s-]*$/.test(lastName)) {
-    error.lastName = 'Last Name cannot contain special characters or numbers except "-"';
+    newErrors.lastName = 'Last Name cannot contain special characters or numbers except "-"';
     setShowAlert(true);
   }
 
   const emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/;
   if (!email) {
-    error.email = 'Please enter Email';
+    newErrors.email = 'Please enter Email';
     setShowAlert(true);
   } else if (!emailRegex.test(email) || !email.endsWith('@gmail.com')) {
-    error.email = 'Please enter a valid Gmail address';
+    newErrors.email = 'Please enter a valid Gmail address';
     setShowAlert(true);
   }
 
   if (!images) {
-    error.images = 'Please Upload Image';
+    newErrors.images = 'Please Upload Image';
     setShowAlert(true);
 
   }
 
   if (!username) {
-    error.username = 'Please enter Username';
+    newErrors.username = 'Please enter Username';
     setShowAlert(true);
 
   }
 
   if (!password) {
-    error.password = 'Please enter Password';
+    newErrors.password = 'Please enter Password';
     setShowAlert(true);
 
   }
 
   if (!role) {
-    error.role = 'Please select Role';
+    newErrors.role = 'Please select Role';
     setShowAlert(true);
 
   }
 
-  if (Object.keys(error).length > 0) {
-    setErrors(error);
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
     return;
   }
   
@@ -151,7 +151,7 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
       setPassword('');
       setRole('');
       setImages(null); // Reset images to null when the modal is shown
-      setErrors('');
+      setError('');
       setShowAlert(false);
       setShowUserExistsAlert(false);
       setShowSuccessAlert(false);
@@ -339,10 +339,5 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
   );
 };
 
-AddAccount.propTypes = {
-  show: PropTypes.bool.isRequired, // Assuming 'show' is a boolean prop and is required
-  handleClose: PropTypes.func.isRequired,
-  handleAdd: PropTypes.func.isRequired,
-};
-export default AddAccount;
+export default AddUser;
 
