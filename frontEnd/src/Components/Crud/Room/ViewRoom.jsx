@@ -32,6 +32,7 @@ const ViewRoom = () => {
 
   const handleAddRoom = (newRoom) => {
     setRoom([...room, newRoom]);
+    fetchData();
   };
 
   // Function to handle edit success alert
@@ -84,7 +85,7 @@ const handleEditError = () => {
   
       // Update the room state after deletion
       setRoom((prevRoom) => prevRoom.filter((roomItem) => roomItem.id !== roomId));
-  
+
       setShowDeleteSuccessAlert(true);
       setTimeout(() => {
         setShowDeleteSuccessAlert(false);
@@ -94,8 +95,6 @@ const handleEditError = () => {
     }
   };
   
-  
-
   return (
     <div>
        {/* Alert for successful edit */}
@@ -126,11 +125,11 @@ const handleEditError = () => {
         <div className='container'>
           <div className='row'>
             <div className='col-md-12'>
-              <AddRoom
-                show={showAddRoomModal}
-                handleClose={toggleAddRoomModal}
-                handleAdd={handleAddRoom}
-              />
+            <AddRoom
+              show={showAddRoomModal}
+              handleClose={toggleAddRoomModal}
+              handleAdd={handleAddRoom}
+            />
 
               <table className='table table-bordered'>
                 <thead>
@@ -176,13 +175,13 @@ const handleEditError = () => {
         </div>
       </section>
       {showEditRoomModal && (
-        <EditRoom
-          show={showEditRoomModal}
-          handleClose={() => setShowEditRoomModal(false)}
-          selectedRoom={selectedRoom}
-          onEdit={handleEditRoom}
-        />
-      )}
+      <EditRoom
+        show={showEditRoomModal}
+        handleClose={() => setShowEditRoomModal(false)} // Pass the handleClose prop
+        selectedRoom={selectedRoom}
+        onEdit={handleEditRoom}
+      />
+    )}
 
     </div>
   );

@@ -31,6 +31,7 @@ const AddBlock = ({show, handleClose, handleAdd}) => {
         setShowSuccessAlert(false);
       }
     }, [show]);
+
     useEffect(() => {
         // Parse the values as integers (or 0 if empty/invalid)
         const firstYearValue = parseInt(firstYear) || 0;
@@ -56,6 +57,12 @@ const AddBlock = ({show, handleClose, handleAdd}) => {
           return; // Prevent form submission if any field is empty
         }
 
+        if (!/^[a-zA-Z0-9\s,-]+$/.test(program)) {
+          setError('Room name and location can only contain letters, numbers, spaces, and \'-\'.');
+          setShowErrorAlert(true);
+          return;
+        }
+
         if (!/^\d+$/.test(firstYear) || !/^\d+$/.test(secondYear) || !/^\d+$/.test(thirdYear) || !/^\d+$/.test(fourthYear)) {
           setError('Can only accept numbers and non-negative.');
           setShowErrorAlert(true);
@@ -68,21 +75,23 @@ const AddBlock = ({show, handleClose, handleAdd}) => {
           return;
         }
         
-
+        const newBlock = {
+          program,
+          firstYear,
+          secondYear,
+          thirdYear,
+          fourthYear,
+          total,
+        };
+        
         try {
-          const response = await axios.get(`http://localhost:8081/blocks/check/${program}`);
+          const response = await axios.get(`http://localhost:8081/block/check/${program}`);
+
           if (response.data.exists) {
             setShowBlockExistsAlert(true);
           } else {
-            const newBlock = {
-              program,
-              firstYear,
-              secondYear,
-              thirdYear,
-              fourthYear,
-              total,
-            };
-          await axios.post('http://localhost:8081/blocks/create', newBlock);
+            
+          await axios.post('http://localhost:8081/block/create', newBlock);
           handleAdd(newBlock);
           handleClose();
           setShowSuccessAlert(true);
@@ -104,20 +113,16 @@ const AddBlock = ({show, handleClose, handleAdd}) => {
         <Modal.Body>
           <Form>
           <Form.Group controlId="program">
-          {/* <Form.Label>Program</Form.Label> */}
-          <Form.Select
-            name="program" // Add name attribute
-            value={program}
-            onChange={(e) => setProgram(e.target.value)}
-            className='mb-2'
-          >
-            <option value="" disabled>Select Program</option>
-            <option value="BSCS">BSCS</option>
-            <option value="BSCS-DS">BSCS-DS</option>
-            <option value="BSIT-BA">BSIT-BA</option>
-            <option value="BSIT-SD">BSIT-SD</option>
-          </Form.Select>
+            <Form.Control
+              type="text"
+              name="program"
+              value={program}
+              onChange={(e) => setProgram(e.target.value)}
+              placeholder="Enter Program"
+              className="mb-2"
+            />
         </Form.Group>
+
 
             <Form.Group controlId="firstYear">
               {/* <Form.Label>First Year</Form.Label> */}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
 import axios from 'axios';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -46,6 +46,7 @@ const AddCourse = ({ show, handleClose, handleAdd }) => {
     axios.get('http://localhost:8081/course/program')  
       .then(response => {
         setPrograms(response.data);
+        console.log(programs);
       })
       .catch(error => {
         console.error('Error fetching data:', error);

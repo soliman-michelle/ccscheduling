@@ -2,16 +2,32 @@ import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import { Modal, Form, Button } from 'react-bootstrap';
 import PropTypes from 'prop-types'; // Import PropTypes
-
+import axios from 'axios';
 const EditBlock = ({ show, handleClose, selectedBlock, onEdit }) => {
-  const [editedBlock, setEditedBlock] = useState(selectedBlock);
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [editedBlock, setEditedBlock] = useState({
+    program: selectedBlock.program,
+    firstYear: String(selectedBlock.firstYear),
+    secondYear: String(selectedBlock.secondYear),
+    thirdYear: String(selectedBlock.thirdYear),
+    fourthYear: String(selectedBlock.fourthYear),
+    total: String(selectedBlock.total),
+  });
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [error, setError] = useState('');
+  const [isProgramValid, setIsProgramValid] = useState(true);
+
   
   const toggleModal = () => {
     handleClose();
   };
+
+  useEffect(() => {
+    // Reset validation when the modal is opened
+    if (show) {
+      setIsProgramValid(true);
+    }
+  }, [show]);
 
   useEffect(() => {
     // Calculate the total whenever any of the input fields change
@@ -25,13 +41,14 @@ const EditBlock = ({ show, handleClose, selectedBlock, onEdit }) => {
     // Update the total in the editedBlock state
     setEditedBlock({
       ...editedBlock,
-      total: newTotal,
+      total: String(newTotal),
     });
+    
   }, [editedBlock, editedBlock.firstYear, editedBlock.secondYear, editedBlock.thirdYear, editedBlock.fourthYear]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    const {firstYear, secondYear, thirdYear, fourthYear } = editedBlock;
+    const {program, firstYear, secondYear, thirdYear, fourthYear } = editedBlock;
 
     if (!firstYear || !secondYear || !thirdYear || !fourthYear) {
       setError('All fields are required.');
@@ -52,11 +69,20 @@ const EditBlock = ({ show, handleClose, selectedBlock, onEdit }) => {
     }
 
     try {
+      // Check if the room name already exists (after normalizing room names)
+      const response = await axios.get(`http://localhost:8081/block/check/${program}`);
+  
+      if (response.data.exists && program !== selectedBlock.program) {
+        // If room exists and it's not the same as the original name, show the alert
+        setIsProgramValid(false);
+        return;
+      } else {
       await onEdit(selectedBlock.id, editedBlock);
       toggleModal();
       setShowSuccessAlert(true);
         setShowErrorAlert(false); // Make sure to hide the error alert on successful update
-    } catch (error) {
+    }
+   } catch (error) {
       setError('Failed to update department block.');
       setShowErrorAlert(true);
       setShowSuccessAlert(false); // Hide the success alert on failed update
@@ -73,24 +99,23 @@ const EditBlock = ({ show, handleClose, selectedBlock, onEdit }) => {
           <Form onSubmit={handleFormSubmit}>
           <Form.Group controlId="program">
           <Form.Label>Program</Form.Label>
-          <Form.Select
-            value={editedBlock.program}
-            disabled
-            onChange={(e) =>
-              setEditedBlock({
-                ...editedBlock,
-                program: e.target.value,
-              })
-            }
-            className='mb-2'
-          >
-            <option value="" disabled>Select Program</option>
-            <option value="BSCS">BSCS</option>
-            <option value="BSCS-DS">BSCS-DS</option>
-            <option value="BSIT-BA">BSIT-BA</option>
-            <option value="BSIT-SD">BSIT-SD</option>
-          </Form.Select>
-        </Form.Group>
+
+          <Form.Control
+              type="text"
+              placeholder="Program"
+              value={editedBlock.program}
+              className={`mb-2 ${isProgramValid ? '' : 'is-invalid'}`}
+              onChange={(e) =>
+                setEditedBlock({
+                  ...editedBlock,
+                  program: e.target.value,
+                })
+              }
+            />
+            <Form.Control.Feedback type="invalid">
+                This program is already exists.
+              </Form.Control.Feedback>
+          </Form.Group>
 
 
           <Form.Group controlId="firstYear">
@@ -214,7 +239,8 @@ const EditBlock = ({ show, handleClose, selectedBlock, onEdit }) => {
 EditBlock.propTypes = {
   show: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
-  selectedBlock: PropTypes.func.isRequired,
+  selectedBlock: PropTypes.object.isRequired, // Change this line
   onEdit: PropTypes.func.isRequired
 };
+
 export default EditBlock;

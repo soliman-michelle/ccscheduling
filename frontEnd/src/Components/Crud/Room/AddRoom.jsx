@@ -38,11 +38,12 @@ const AddRoom = ({ show, handleClose, handleAdd }) => {
       return;
     }
 
-    if (!/^[a-zA-Z0-9\s,[@-]+$/.test(location)) {
-      setError('Location can only contain \',\' , \'-\' and \'@\' special characters.');
+    if (!/^[a-zA-Z0-9\s,-]+$/.test(roomName) || !/^[a-zA-Z0-9\s,-]+$/.test(location)) {
+      setError('Room name and location can only contain letters, numbers, spaces, and \'-\'.');
       setShowAlert(true);
       return;
-    }    
+    }
+    
   
     if (isNaN(parseInt(capacity, 10))) {
       setError('Capacity must be a number.');

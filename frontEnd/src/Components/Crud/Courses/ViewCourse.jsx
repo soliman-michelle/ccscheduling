@@ -24,6 +24,7 @@ const ViewCourse = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = course.slice(indexOfFirstItem, indexOfLastItem);
   const [showDeleteSuccessAlert, setShowDeleteSuccessAlert] = useState(false);
+  const [programOptions, setProgramOptions] = useState([]);
 
   const navigate = useNavigate(); 
 
@@ -45,7 +46,10 @@ const ViewCourse = () => {
 
   const toggleProgramModal = () => {
     setShowProgramModal(!showProgramModal);
+    console.log('showProgramModal:', showProgramModal);
   };
+  
+  
 
   const handleAddcourse = (newCourse) => {
     setCourse([...course, newCourse]);
@@ -53,7 +57,7 @@ const ViewCourse = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`http://localhost:8081/course?program=${selectedProgram}`);
+      const res = await axios.get(`http://localhost:8081/course`);
       setCourse(res.data);
     } catch (err) {
       console.error(err);
@@ -63,6 +67,20 @@ const ViewCourse = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      try {
+        const response = await axios.get('http://localhost:8081/course/program');
+        console.log("Course: ", response.data);
+        setProgramOptions(response.data);
+      } catch (error) {
+        console.error('Error fetching programs:', error);
+      }
+    };
+
+    fetchPrograms();
+  }, []); 
 
   const handleEditCourse = async (courseCode, courseName, updatedCourseData) => {
     try {
@@ -92,12 +110,12 @@ const handlePageChange = (selected) => {
 };
 
 
-const filterCoursesByProgram = () => {
-  const filteredCourses = course.filter((courseItem) =>
-    courseItem.program.includes(selectedProgram)
-  );
-  setCourse(filteredCourses);
-};
+// const filterCoursesByProgram = () => {
+//   const filteredCourses = course.filter((courseItem) =>
+//     courseItem.program.includes(selectedProgram)
+//   );
+//   setCourse(filteredCourses);
+// };
 
   return (
     <div>
@@ -143,11 +161,11 @@ const filterCoursesByProgram = () => {
                       <td>{courseItem.units}</td>
                       <td>{courseItem.duration}</td>
                       <td>
-                        {/* <button
+                        <button
                           onClick={() => toggleEditCourseModal(courseItem, courseItem.year_level)}
                         >
                           <FontAwesomeIcon icon={faPen} />
-                        </button> */}
+                        </button>
 
                         <DeleteCourse
                           key={courseItem.course_id}
@@ -178,30 +196,31 @@ const filterCoursesByProgram = () => {
         activeClassName={'active'}
       />
       <Modal show={showProgramModal} onHide={toggleProgramModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Filter Courses by Program</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-        <select
-          value={selectedProgram}
-          onChange={(e) => setSelectedProgram(e.target.value)}
-        >
-          <option value="BSIT-BA">BSIT-BA</option>
-          <option value="BSIT-SD">BSIT-SD</option>
-          <option value="BSCS">BSCS</option>
-          <option value="BSCS-DS">BSCS-DS</option>
-        </select>
+  <Modal.Header closeButton>
+    <Modal.Title>Filter Courses by Program</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <select
+      value={selectedProgram}
+      onChange={(e) => setSelectedProgram(e.target.value)}
+    >
+      {programOptions.map((program) => (
+        <option key={program.program} value={program.program}>
+          {program.program}
+        </option>
+      ))}
+    </select>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={toggleProgramModal}>
+      Close
+    </Button>
+    <Button variant="primary" onClick={handleFilterButtonClick}>
+      Filter
+    </Button>
+  </Modal.Footer>
+</Modal>
 
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={toggleProgramModal}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleFilterButtonClick}>
-            Filter
-          </Button>
-        </Modal.Footer>
-      </Modal>
       
       {showEditCourseModal && (
         <EditCourse

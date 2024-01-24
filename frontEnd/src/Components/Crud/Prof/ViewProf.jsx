@@ -18,7 +18,7 @@ const ViewProf = () => {
   };
 
   const toggleEditUserModal = (selectedUser) => {
-    setSelectedUser(selectedUser); // Use the 'selectedUser' parameter here
+    setSelectedUser(selectedUser);
     setShowEditUserModal(true);
   };
   
@@ -27,43 +27,6 @@ const ViewProf = () => {
     setShowModalDelete(!showModalDelete);
   };
 
-  const handleAddUser = (newUser) => {
-    console.log(newUser); // Log the new user
-    setUser([...user, newUser]);
-    fetchData(); 
-  };
-  
-  const fetchData = async () => {
-    try {
-      const res = await axios.get("http://localhost:8081/profs");
-      setUser(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    const fetchDataAndRoles = async () => {
-      try {
-        const res = await axios.get("http://localhost:8081/profs");
-        setUser(res.data);
-  
-        const updatedUser = await Promise.all(
-          res.data.map(async (userItem) => {
-            const roleName = await fetchRoleName(userItem.role);
-            return { ...userItem, roleName };
-          })
-        );
-        setUser(updatedUser);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-  
-    fetchDataAndRoles();
-  }, []);
-  
-  
   const fetchRoleName = async (roleId) => {
     try {
       const res = await axios.get(`http://localhost:8081/profs/roles/${roleId}`);
@@ -73,30 +36,85 @@ const ViewProf = () => {
       return 'Role not found';
     }
   };
-  
-  
-  const handleEditUser = async (userId, updatedUserData) => {
+
+  const fetchDataAndRoles = async () => {
     try {
-      await axios.put(`http://localhost:8081/profs/` +userId + '/update', updatedUserData);
-      fetchData(); // Refresh data after updating
+      const res = await axios.get("http://localhost:8081/profs");
+      setUser(res.data);
+
+      const updatedUser = await Promise.all(
+        res.data.map(async (userItem) => {
+          const roleName = await fetchRoleName(userItem.role);
+          return { ...userItem, roleName };
+        })
+      );
+      setUser(updatedUser);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchDataAndRoles();
+  }, []);
+  
+  const handleAddUser = async (userData) => {
+    try {
+      console.log('UserData:', userData);
+
+      const roleName = await fetchRoleName(userData.role);
+  
+      // Update the user state with the role name included
+      setUser((prevUser) => [...prevUser, { ...userData, roleName }]);
+      fetchDataAndRoles();
     } catch (error) {
       console.error(error);
     }
   };
-
-  const handleDeleteUser = async (userId) => {
+  
+  const handleEditUser = async (userId, updatedUserData) => {
     try {
-      await axios.delete(`http://localhost:8081/profs/` + userId + `/delete`);
-      return Promise.resolve(); // Resolve the promise when deletion is successful
+      const response = await axios.put(`http://localhost:8081/profs/${userId}/update`, updatedUserData);
+      console.log('Server response:', response.data); // Log the response from the server
+
+      if (response.status === 200) {
+        console.log('User data successfully updated:', updatedUserData);
+        console.log('Server response:', response.data); // Log the response from the server
+        fetchDataAndRoles(); // Refresh data after updating
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        console.error('Failed to update user data. Server response:', response);
+        // Handle the error as needed
+      }
     } catch (error) {
-      console.error(`Error deleting user with ID ${userId}:`, error);
-      return Promise.reject(error); // Reject the promise on error
+      console.error('Error updating user data:', error);
+      // Handle the error as needed
     }
   };
   
-  const handleUserDeleted = (deletedUserId) => {
-    setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== deletedUserId));
+  
+  
+
+  const handleDeleteUser = async (userId) => {
+  
+    try {
+      // Wait for the deletion to be successful
+      await axios.delete(`http://localhost:8081/profs/${userId}/delete`);
+      fetchDataAndRoles();
+  
+      if (selectedUser && selectedUser.user_id === userId) {
+        setShowEditUserModal(false);
+        setSelectedUser(null);
+      }
+      setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== userId));
+    } catch (error) {
+      console.error(`Error deleting user with ID ${userId}:`, error);
+      // Handle the error if needed
+    }
   };
+  
+  
+
   return (
     <div>
       <section className="home-section">
@@ -133,10 +151,10 @@ const ViewProf = () => {
                           <FontAwesomeIcon icon={faPen} />
                         </button>
                         <DeleteProf
+                          key={userItem.User_id}
                           show={showModalDelete}
                           handleClose={toggleModalDelete}
                           handleDelete={() => handleDeleteUser(userItem.User_id)}
-                          onUserDeleted={handleUserDeleted}
                         />
                       </td>
                     </tr>

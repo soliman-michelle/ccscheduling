@@ -32,6 +32,7 @@ const ViewBlock = () => {
 
   const handleAddblock = (newBlock) => {
     setBlock([...block, newBlock]);
+    fetchData();
   };
 
    // Function to handle edit success alert
@@ -62,7 +63,7 @@ const handleEditError = () => {
 
   const handleEditBlock = async (blockId, updatedBlockData) => {
     try {
-      await axios.put(`http://localhost:8081/block/` +blockId + '/update', updatedBlockData);
+      await axios.put(`http://localhost:8081/block/${blockId}/update`, updatedBlockData);
       fetchData(); // Refresh data after updating
       handleEditSuccess(); // Show success alert
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -75,16 +76,19 @@ const handleEditError = () => {
 
   const handleDeleteBlock = async (blockId) => {
     try {
-      const response = await axios.delete(`http://localhost:8081/block/${blockId}/delete`);
-      if (response.status === 200) {
-        setBlock((prevblock) => prevblock.filter((blockItem) => blockItem.id !== blockId));
+      await axios.delete(`http://localhost:8081/block/${blockId}/delete`);
+
+      if(selectedBlock && selectedBlock.id === blockId){
+        setShowEditBlockModal(false);
+        setSelectedBlock(null);
+      }
+
+      setBlock((prevblock) => prevblock.filter((blockItem) => blockItem.id !== blockId));
+        
         setShowDeleteSuccessAlert(true);
         setTimeout(() => {
           setShowDeleteSuccessAlert(false);
         }, 8000); // Hide alert after 3 seconds
-      } else {
-        console.error(`Error deleting block with ID ${blockId}:`, response.data);
-      }
     } catch (error) {
       console.error(`Error deleting block with ID ${blockId}:`, error);
     }
@@ -94,7 +98,7 @@ const handleEditError = () => {
   return (
     <div>
        {/* Alert for successful edit */}
-       {showEditSuccessAlert && (
+       {showEditSuccessAlert && selectedBlock && (
         <div className="alert alert-success alert-dismissible fade show" role="alert">
           <strong>Success!</strong> Departamental Block for <strong>{selectedBlock.program}</strong> updated successfully!
           <button type="button" className="btn-close" onClick={() => setShowEditSuccessAlert(false)} aria-label="Close"></button>
@@ -102,7 +106,7 @@ const handleEditError = () => {
       )}
 
       {/* Alert for edit error */}
-      {showEditErrorAlert && (
+      {showEditErrorAlert && selectedBlock &&(
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           <strong>Error!</strong> Failed to update  Departamental Block for <strong>{selectedBlock.program}</strong>.
           <button type="button" className="btn-close" onClick={() => setShowEditErrorAlert(false)} aria-label="Close"></button>
@@ -110,12 +114,13 @@ const handleEditError = () => {
       )}
 
       {/* Alert for successful deletion */}
-     {showDeleteSuccessAlert && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
-          <strong>Success!</strong> Departamental Block for <strong>{selectedBlock.program}</strong> deleted successfully!
-          <button type="button" className="btn-close" onClick={() => setShowDeleteSuccessAlert(false)} aria-label="Close"></button>
-        </div>
-      )}
+      {showDeleteSuccessAlert && selectedBlock && (
+      <div className="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Success!</strong> Departamental Block for <strong>{selectedBlock.program}</strong> deleted successfully!
+        <button type="button" className="btn-close" onClick={() => setShowDeleteSuccessAlert(false)} aria-label="Close"></button>
+      </div>
+    )}
+
       <section className="home-section">
         <div className='container'>
           <div className='row'>

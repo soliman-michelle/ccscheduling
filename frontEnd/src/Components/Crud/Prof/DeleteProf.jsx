@@ -1,34 +1,32 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import PropTypes from 'prop-types';
 
-const DeleteProf = ({ show, handleClose, handleDelete, userId, onUserDeleted }) => {
+const DeleteProf = ({ handleDelete, userId, handleClose }) => {
   const [showModalDelete, setShowModalDelete] = useState(false);
 
   const toggleModalDelete = () => {
     setShowModalDelete(!showModalDelete);
   };
-
   const handleConfirmDelete = () => {
-    handleDelete(userId)
-      .then(() => {
-        onUserDeleted(userId); // Notify the parent component about the deletion
-        toggleModalDelete(); // Close the modal
-      })
-      .catch((error) => {
-        console.error('Error deleting user:', error);
-        // Handle error if necessary
-      });
+    handleDelete(userId); // Call the handleDelete function passed as a prop
+    toggleModalDelete(); // Close the modal
+  };
+
+  const handleCloseModal = () => {
+    toggleModalDelete();
+    handleClose(); // Call handleClose when the modal is closed
   };
 
   return (
     <div>
       <button className="btn btn-danger" onClick={toggleModalDelete}>
-      <FontAwesomeIcon icon={faTrash} />
+        <FontAwesomeIcon icon={faTrash} />
       </button>
-      
-      <Modal show={showModalDelete} onHide={toggleModalDelete}>
+
+      <Modal show={showModalDelete} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Delete Professor</Modal.Title>
         </Modal.Header>
@@ -48,4 +46,9 @@ const DeleteProf = ({ show, handleClose, handleDelete, userId, onUserDeleted }) 
   );
 };
 
+DeleteProf.propTypes = {
+  handleClose: PropTypes.func.isRequired,
+  handleDelete: PropTypes.func.isRequired,
+  userId: PropTypes.string.isRequired,
+};
 export default DeleteProf;

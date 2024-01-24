@@ -193,7 +193,6 @@ const EditRoom = ({ show, handleClose, selectedRoom, onEdit }) => {
 };
 
 EditRoom.propTypes = {
-  show: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   selectedRoom: PropTypes.shape({
     id: PropTypes.string.isRequired, // Include id in PropTypes

@@ -745,8 +745,12 @@
 
     // Check if a room exists with the given name
     app.get("/block/check/:program", (req, res) => {
-      const program = req.params.program;
-      db.query("SELECT * FROM blocks WHERE program = ?", [program], (err, data) => {
+      const originalProgramName = req.params.program;
+      const normalizedProgram = originalProgramName.replace(/[^a-zA-Z0-9]/g, ''); // Remove all non-alphanumeric characters
+    
+      console.log('Normalized Program:', normalizedProgram);
+    
+      db.query("SELECT * FROM blocks WHERE REPLACE(REPLACE(program, ' ', ''), '-', '') = ?", [normalizedProgram], (err, data) => {
         if (err) {
           console.log(err);
           return res.json(err);
@@ -754,6 +758,8 @@
         return res.json({ exists: data.length > 0 });
       });
     });
+    
+    
 
   // view all specific block per year and per program
     app.get("/block/wh_blk", (req, res) => {
@@ -1013,8 +1019,18 @@ try {
 
 // View all course list
 app.get("/course", (req, res) => {
-  const sql = "SELECT * from courses";
-  db.query(sql, (err, data) => {
+  const { program } = req.query;
+  let sql = "SELECT * FROM courses";
+
+  if (program) {
+    // Apply filtering if a program is specified
+    sql = `SELECT c.*
+    FROM courses c
+    JOIN program_course_mapping pcm ON c.course_id = pcm.course_id
+    WHERE pcm.program = ?`;
+  }
+
+  db.query(sql, [program], (err, data) => {
     if (err) {
       console.log(err);
       return res.json(err);
@@ -1023,7 +1039,8 @@ app.get("/course", (req, res) => {
   });
 });
 
-app.get("course/year/:course_id", (req, res) => {
+
+app.get("/course/year/:course_id", (req, res) => {
   const course_id = req.params.course_id;
   const sql = "SELECT pca.program, pca.year_level, pca.blocks FROM courses AS c INNER JOIN program_course_mapping AS pca ON c.course_id = pca.course_id WHERE c.course_id = ?";
   db.query(sql, [course_id], (err, data) => {
@@ -1036,7 +1053,7 @@ app.get("course/year/:course_id", (req, res) => {
 });
 
 // check duplicate course
-app.get("course/check/:course_code/:course_name", (req, res) => {
+app.get("/course/check/:course_code/:course_name", (req, res) => {
   const course_code = req.params.course_code;
   const course_name = req.params.course_name;
 
@@ -1050,7 +1067,7 @@ app.get("course/check/:course_code/:course_name", (req, res) => {
 });
 
 //get all program
-app.get("course/program", (req, res) => {
+app.get("/course/program", (req, res) => {
   const sql = "SELECT program from blocks";
   db.query(sql, (err, data) => {
     if (err) {
@@ -1062,7 +1079,7 @@ app.get("course/program", (req, res) => {
 });
 
 //add new course
-app.post("course/create", (req, res) => {
+app.post("/course/create", (req, res) => {
 const code = req.body.course_code;
 const name = req.body.course_name;
 const units = req.body.units;
@@ -1092,7 +1109,7 @@ db.query(
 });
 
 //update 
-app.put("course/update/:courseId", (req, res) => {
+app.put("/course/update/:courseId", (req, res) => {
 const courseId = req.params.courseId;
 const {
   course_code,
@@ -1126,7 +1143,8 @@ db.query(
 );
 });
 
-app.delete("course/:course_id/delete", (req, res) => {
+//delete
+app.delete("/course/:course_id/delete", (req, res) => {
 const courseId = req.params.course_id;
 
 db.query("DELETE FROM program_course_mapping WHERE course_id = ?", [courseId], (err, mappingResult) => {
@@ -1188,7 +1206,23 @@ app.get('/profs/roles/:roleId', (req, res) => {
   });
 });
 
-app.post('profs/create', (req, res) =>{
+app.get("/profs/check/:fname/:lname", (req, res) => {
+  const originalFname = req.params.fname;
+  const originalLname = req.params.lname;
+  const normalizedFnameWithoutSpaces = originalFname.replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters and spaces
+  const normalizedLnameWithoutSpaces = originalLname.replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters and spaces
+
+  db.query("SELECT * FROM users WHERE REPLACE(CONCAT(fname, lname), ' ', '') = ?", [normalizedFnameWithoutSpaces + normalizedLnameWithoutSpaces], (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    }
+    return res.json({ exists: data.length > 0 });
+  });
+});
+
+
+app.post('/profs/create', (req, res) =>{
   const fname = req.body.fname;
   const mname = req.body.mname;
   const lname = req.body.lname;
@@ -1203,26 +1237,28 @@ app.post('profs/create', (req, res) =>{
   });
 });
 
-app.put("profs/:id/update", (req, res) => {
-  const userId = req.params.id;
-  const sql = "UPDATE users SET `fname` = ?, `mname` = ?, `lname `= ?, `role` = ? WHERE user_id = ? ";
-  const values = [
-      req.body.fname,
-      req.body.mname,
-      req.body.lname,
-      req.body.role,
-      userId
-  ];
+app.put("/profs/:userId/update", (req, res) => {
+  const userId = req.params.userId;  // Ensure it's named correctly
+  const sql = "UPDATE users SET `fname` = ?, `mname` = ?, `lname` = ?, `role` = ? WHERE User_id = ? ";
+  const values = [req.body.fname, req.body.mname, req.body.lname, req.body.role, userId];
+
+  console.log('SQL Query:', sql);
+  console.log('Query Values:', values);
+
   db.query(sql, values, (err, data) => {
-      if(err){
-          return res.send(err);
-      }else {
-          return res.json(data);
-      }
+    if (err) {
+      console.error('Error executing SQL query:', err);
+      return res.status(500).send(err);
+    } else {
+      console.log('Update successful. Data:', data);
+      return res.json(data);
+    }
   });
 });
 
-app.delete('profs/:user_id/delete', (req, res) => {
+
+
+app.delete('/profs/:user_id/delete', (req, res) => {
   const userId = req.params.user_id; 
   db.query("DELETE FROM users WHERE User_id = ?", [userId], (err, data) => {
     if (err) {
@@ -1234,6 +1270,7 @@ app.delete('profs/:user_id/delete', (req, res) => {
     }
   });
 });
+
 
 
   app.listen(8081, () => {
