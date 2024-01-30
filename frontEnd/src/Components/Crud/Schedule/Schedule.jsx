@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from '../../Header';
 import Sidebar from '../../Sidebar';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -35,7 +35,7 @@ const Schedule = () => {
                 onClick={(e) => { e.preventDefault(); handleTabChange('autoGenerate');}}
                 href="/schedule/"
               >
-                Auto Generate
+                Class
               </a>  
             </li>
             <li className="nav-item">
@@ -44,7 +44,7 @@ const Schedule = () => {
                 onClick={(e) => { e.preventDefault(); handleTabChange('manual');}}
                 href="/schedule/manual/"
               >
-                Manual
+                Summer
               </a>
             </li>
               </ul>

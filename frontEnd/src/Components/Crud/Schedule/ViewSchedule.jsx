@@ -17,6 +17,7 @@ const ViewSchedule = () => {
   const maxGenerations = 10;
   const crossoverRate = 0.8;
   const mutationRate = 0.1;
+  
   const sidebarStyle = {
     paddingRight: '15%',
   };
@@ -581,7 +582,6 @@ for (let i = 0; i < populationSize; i++) {
   const handleGenerateClasses = async () => {
     const bestSchedule = await geneticAlgorithm();
     setBestSchedule(bestSchedule);
-    console.log('Rendering AddSchedule component');
 console.log('Selected Course:', selectedCourse);
 console.log('Best Schedule:', bestSchedule);
 
@@ -695,7 +695,7 @@ const Timetable = () => {
         <div className="card card-body card-dark bg-success-gradient bubble-shadow mb-4 animated fadeInDown">
           <h1 className="m-2">
             <i className="far fa-calendar-check"></i>
-            &nbsp; Auto Schedule
+            &nbsp; Class Schedule
           </h1>
         </div>
         <div className="card card-body mb-3 animated fadeInUp">

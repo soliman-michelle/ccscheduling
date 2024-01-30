@@ -452,7 +452,7 @@ import React, { useState, useEffect } from 'react';
             <div className="card card-body card-dark bg-success-gradient bubble-shadow mb-2 animated fadeInDown">
               <h1>
                 <i className="far fa-calendar-check"></i>
-                &nbsp; Manual Schedule
+                &nbsp; Summer Schedule
               </h1>
               <Dropdown show={isScheduleTypeDropdownOpen} onToggle={toggleScheduleTypeDropdown}>
                 <Dropdown.Toggle id="dropdown-basic" className="custom-dropdown-toggle float-right">

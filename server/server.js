@@ -1039,7 +1039,6 @@ app.get("/course", (req, res) => {
   });
 });
 
-
 app.get("/course/year/:course_id", (req, res) => {
   const course_id = req.params.course_id;
   const sql = "SELECT pca.program, pca.year_level, pca.blocks FROM courses AS c INNER JOIN program_course_mapping AS pca ON c.course_id = pca.course_id WHERE c.course_id = ?";
@@ -1271,6 +1270,196 @@ app.delete('/profs/:user_id/delete', (req, res) => {
   });
 });
 
+app.get("/manual", (req, res) => {
+  const sql = "SELECT * FROM specialization";
+  db.query(sql, (err, data) =>{
+      if(err){
+        console.log(err);
+        return res.json(err);
+      }
+        return res.json(data);
+    });
+});
+
+app.get("/manual/professors/:courseId", (req, res) => {
+  const courseId = req.params.courseId;
+  let sql = `
+    SELECT s.*, u.fname, u.lname
+    FROM specialization AS s
+    INNER JOIN users AS u ON s.User_id = u.User_id
+    WHERE s.course_id = ? 
+    GROUP BY s.User_id, u.fname, u.lname;
+  `;
+
+  db.query(sql, [courseId], (err, professorsData) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(professorsData);
+    }
+  });
+});
+
+
+app.get("/manual/courses", (req, res) => {
+  let sql = `
+    SELECT * FROM courses;
+  `;
+
+  db.query(sql, (err, coursesData) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(coursesData);
+    }
+  });
+});
+
+
+app.get("/manual/block/:courseId", (req, res) => {
+  const courseId = req.params.courseId;
+  let sql = `Select count(*) as total_blocks FROM block_course_assignment WHERE course_id = ?; `;
+
+  db.query(sql, [courseId], (err, coursesData) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(coursesData);
+    }
+  });
+});
+app.get('/manual/program-year-block/:courseId', (req, res) => {
+  const courseId = req.params.courseId;
+
+  const query =  `SELECT bc.*
+  FROM specialization s
+  INNER JOIN courses c ON s.course_id = c.course_id
+  INNER JOIN (
+    SELECT
+      course_id,
+      program,
+      year,
+      block
+    FROM block_course_assignment 
+  ) bc ON c.course_id = bc.course_id
+  WHERE c.course_id = ?;
+  `;
+  db.query(query, [courseId], (err, results) => {
+    if (err) {
+      console.error('Error executing the query: ' + err);
+      res.status(500).send('Error fetching data from the database');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get('/manual/room', (req, res) => {
+  const sql = "SELECT * FROM room";
+  db.query(sql, (err, data) =>{
+      if(err){
+        console.log(err);
+        return res.json(err);
+      }
+        return res.json(data);
+    });
+});
+app.get('/manual/rooms/:roomType', (req, res) => {
+const { roomType } = req.params;
+let sql;
+
+if (roomType === 'Regular' || roomType === 'Laboratory') {
+  sql = `SELECT * FROM room WHERE type = '${roomType}'`;
+} else {
+  sql = 'SELECT * FROM room WHERE type != "Laboratory"';
+}
+
+db.query(sql, (err, data) => {
+  if (err) {
+    console.log(err);
+    return res.json(err);
+  }
+  return res.json(data);
+});
+});
+
+app.post('/manual/create', (req, res) => {
+  const course = req.body.course;
+  const professor = req.body.professor;
+  const slot = req.body.slot;
+
+  // Fetch course duration based on the course ID
+  db.query("SELECT duration FROM courses WHERE course_id = ?", [course], (err, rows) => {
+      if (err) {
+          console.log(err);
+          res.status(500).send("Error occurred while fetching course duration.");
+          return;
+      }
+
+      if (rows.length === 0) {
+          res.status(404).send("Course not found.");
+          return;
+      }
+
+      const courseDuration = rows[0].duration;
+
+      // Insert into summer table
+      db.query("INSERT INTO summer (User_id, course_id, slot) VALUES (?, ?, ?)", [professor, course, slot], (err, result) => {
+          if (err) {
+              console.log(err);
+              res.status(500).send("Error occurred while inserting into summer table.");
+              return;
+          }
+
+          const blocks = Array.from({ length: slot }, (_, i) => String.fromCharCode(65 + i)); // Generate blocks A, B, C, etc.
+          let insertValues = [];
+
+          blocks.forEach(block => {
+              if (courseDuration === 5) {
+                  insertValues.push([result.insertId, block, 'ftf']);
+                  insertValues.push([result.insertId, block, 'online']);
+                  insertValues.push([result.insertId, block, 'lab']);
+              } else if (courseDuration === 3) {
+                  insertValues.push([result.insertId, block, 'ftf']);
+                  insertValues.push([result.insertId, block, 'online']);
+              }
+          });
+
+          console.log("Insert values:", insertValues);
+
+          // Insert into summer_sched table
+          if (insertValues.length > 0) {
+              const placeholders = insertValues.map(() => "(?, ?, ?)").join(", ");
+              const values = insertValues.flat();
+              const queryString = `INSERT INTO summer_sched (id, block, type) VALUES ${placeholders}`;
+              console.log("Generated SQL query:", queryString);
+              
+              db.query(queryString, values, (err, result) => {
+                  if (err) {
+                      console.log(err);
+                      res.status(500).send("Error occurred while inserting into summer_sched table.");
+                      return;
+                  }
+                  res.send("Data inserted successfully into both summer and summer_sched tables.");
+              });
+          } else {
+              res.send("No data to insert into summer_sched table.");
+          }
+      });
+  });
+});
+
+
+app.get('/manual/display', (req, res) => {
+  db.query("SELECT s.*, c.course_code, c.course_name, u.fname, u.lname FROM summer s INNER JOIN courses c ON s.course_id = c.course_id INNER JOIN users u ON s.User_id = u.User_id", (err, result) => {
+      if (err) {
+          console.error('Error fetching summer data: ', err);
+          res.status(500).send('Internal server error');
+      } else {
+          res.status(200).send(result);
+      }
+  });
+});
 
 
   app.listen(8081, () => {

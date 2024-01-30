@@ -648,7 +648,7 @@ console.log('Best Schedule:', bestSchedule);
         <div className="card card-body card-dark bg-success-gradient bubble-shadow mb-4 animated fadeInDown">
           <h1 className="m-2">
             <i className="far fa-calendar-check"></i>
-            &nbsp; Auto Schedule
+            &nbsp; Class Schedule
           </h1>
         </div>
         <div className="card card-body mb-3 animated fadeInUp">
