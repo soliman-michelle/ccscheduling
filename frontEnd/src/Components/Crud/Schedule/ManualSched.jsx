@@ -7,6 +7,7 @@
   import DeleteSummer from "./Delete";
   import Dropdown from 'react-bootstrap/Dropdown';
   import { FaCaretDown } from 'react-icons/fa';
+  import SummerGenetic from "./SummerGenetic";
 
   const ManualSched = () => {
       const [showModal, setShowModal] = useState(false);
@@ -21,6 +22,8 @@
       const [showDeleteSuccessAlert, setShowDeleteSuccessAlert] = useState(false);
       const [isFilterDropdownOpen, setFilterDropdownOpen] = useState(false);
       const [selectedFilter, setSelectedFilter] = useState('Professor');
+      const [showSummerGenetic, setShowSummerGenetic] = useState(false);
+      const [showTable, setShowTable] = useState(true); // State to control table visibility
 
       const openModal = () => {
           setShowModal(true);
@@ -113,8 +116,11 @@
 
       const handleGenerateSummerClasses = async () => {
         try {
-            const response = await axios.post('http://localhost:8081/manual/generate');
-            console.log("Generated summer classes: ", response.data);
+            // const response = await axios.post('http://localhost:8081/manual/generate');
+            // console.log("Generated summer classes: ", response.data);
+            setShowSummerGenetic(true);
+            setShowTable(false); // Hide the table
+            console.log("Clicked on Generate Summer Classes button");
         } catch (error) {
             console.error('Error generating summer classes: ', error);
         }
@@ -205,6 +211,7 @@
                   </Modal.Footer>
               </Modal>
 
+              {showTable && ( // Render the table only if showTable is true
               <div>
                 <table className="table">
                     <thead>
@@ -248,8 +255,10 @@
                     </tbody>
                 </table>
             </div>
+            )}
+                            {showSummerGenetic && <SummerGenetic />}
 
-          </div>
+        </div>
       );
   };
 

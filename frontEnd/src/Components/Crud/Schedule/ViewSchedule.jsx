@@ -12,6 +12,7 @@ const ViewSchedule = () => {
   const [availableBlocks, setAvailableBlocks] = useState([]);
   const [courseDuration, setCourseDuration] = useState(null);
   const [bestSchedule, setBestSchedule] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const populationSize = 40;  
   const maxGenerations = 10;
@@ -26,7 +27,6 @@ const ViewSchedule = () => {
     const initialize = async () => {
       try {
         const initialSchedule = await generateRandomSchedule();
-        console.log("Initial Schedule:", initialSchedule);
         setBestSchedule(initialSchedule); // Set the initial schedule to the state
       } catch (error) {
         console.error('Error generating initial schedule: ', error);
@@ -113,10 +113,8 @@ useEffect(() => {
     const population = [];
     for (let i = 0; i < populationSize; i++) {
       const schedule = await generateRandomSchedule();
-      console.log(`Initial Schedule ${i}: `, schedule);
       population.push(schedule);
     }
-    console.log('Initial Population:', population);
     return population;
   };
   
@@ -291,10 +289,6 @@ const checkClassHour = async (professorId, classHours) => {
     return array[randomIndex];
   };
   const calculateFitness = (bestSchedule) => {
-    console.log('Schedule Type:', typeof bestSchedule);
-    console.log('Schedule Structure:', bestSchedule);    
-    
-   
     const professorWorkloadScores = bestSchedule.map((classInfo) => {
       // For simplicity, let's assume professors should have between 3 and 6 classes
       const professorWorkload = classInfo.professor > 9;
@@ -307,6 +301,31 @@ const checkClassHour = async (professorId, classHours) => {
       const roomOverbooking = classInfo.room > 13;
       return Math.max(0, roomOverbooking - 10); // Penalize overbooking
     });
+
+  //   const roomOverbookingScores = bestSchedule.reduce((overbookingScores, classInfo) => {
+  //     if (!classInfo.break) {
+  //         const { day, room } = classInfo;
+  //         // Initialize room count for the day if not already initialized
+  //         if (!overbookingScores[day]) {
+  //             overbookingScores[day] = {};
+  //         }
+  //         // Increment class count for the room
+  //         overbookingScores[day][room.roomName] = (overbookingScores[day][room.roomName] || 0) + 1;
+  //     }
+  //     return overbookingScores;
+  // }, {});
+  
+  // // Calculate scores based on room counts
+  // const totalRoomOverbookingScore = Object.values(roomOverbookingScores).reduce((totalScore, dayRoomCounts) => {
+  //     const dayScore = Object.values(dayRoomCounts).reduce((dayScore, roomCount) => {
+  //         // Calculate overbooking for each room in the day
+  //         return dayScore + Math.max(0, roomCount - 6); // Penalize if room count exceeds 6
+  //     }, 0);
+  //     return totalScore + dayScore; // Accumulate day scores
+  // }, 0);
+  
+  // console.log('Room Overbooking Scores:', totalRoomOverbookingScore);
+  
   
     // Criterion 3: Even distribution of classes across days
     const dayDistributionScore = calculateDayDistributionScore(bestSchedule);
@@ -582,8 +601,9 @@ for (let i = 0; i < populationSize; i++) {
   const handleGenerateClasses = async () => {
     const bestSchedule = await geneticAlgorithm();
     setBestSchedule(bestSchedule);
-console.log('Selected Course:', selectedCourse);
-console.log('Best Schedule:', bestSchedule);
+    setLoading(true);
+    console.log('Selected Course:', selectedCourse);
+    console.log('Best Schedule:', bestSchedule);
 
   };
 

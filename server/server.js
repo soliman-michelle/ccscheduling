@@ -1449,7 +1449,6 @@ app.post('/manual/create', (req, res) => {
   });
 });
 
-
 app.get('/manual/display', (req, res) => {
   db.query("SELECT s.*, c.course_code, c.course_name, u.fname, u.lname FROM summer s INNER JOIN courses c ON s.course_id = c.course_id INNER JOIN users u ON s.User_id = u.User_id", (err, result) => {
       if (err) {
@@ -1458,6 +1457,240 @@ app.get('/manual/display', (req, res) => {
       } else {
           res.status(200).send(result);
       }
+  });
+});
+
+app.get("/autogenetics", (req, res) => {
+  const sql = "SELECT * FROM specialization";
+  db.query(sql, (err, data) =>{
+      if(err){
+        console.log(err);
+        return res.json(err);
+      }
+        return res.json(data);
+    });
+});
+
+app.get("/autogenetics/professors", (req, res) => {
+  let sql = `
+  SELECT s.User_id, u.fname, u.lname, u.role, r.*
+  FROM specialization AS s
+  INNER JOIN users AS u ON s.User_id = u.User_id
+  INNER JOIN role AS r ON u.role = r.role_id
+  GROUP BY s.User_id, u.fname, u.lname, u.role, r.role;
+  `;
+
+  db.query(sql, (err, professorsData) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(professorsData);
+    }
+  });
+});
+
+app.get("/autogenetics/courses/:userId", (req, res) => {
+  const userId = req.params.userId;
+  let sql = `
+    SELECT c.course_id, c.course_code, c.course_name, c.duration, c.online, c.ftf, c.lab
+    FROM courses AS c
+    WHERE c.course_id IN (
+        SELECT DISTINCT s.course_id
+        FROM specialization AS s
+        WHERE s.User_id = ? );
+  `;
+  db.query(sql, [userId], (err, professorsData) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(professorsData);
+    }
+  });
+});
+    
+  app.get("/autogenetics/courses/", (req, res) => {
+    let sql = `SELECT * FROM courses
+    `;
+  db.query(sql, (err, coursesData) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(coursesData);
+    }
+  });
+});
+
+app.get("/autogenetics/block/:courseId", (req, res) => {
+  const courseId = req.params.courseId;
+  console.log('Received courseId:', courseId);
+
+  let sql = `Select count(*) as total_blocks FROM block_course_assignment WHERE course_id = ?; `;
+
+  db.query(sql, [courseId], (err, coursesData) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(coursesData);
+    }
+  });
+});
+
+
+app.get('/autogenetics/program-year-block/:courseId', (req, res) => {
+  const courseId = req.params.courseId;
+
+  const query =  `SELECT bc.*
+  FROM specialization s
+  INNER JOIN courses c ON s.course_id = c.course_id
+  INNER JOIN (
+    SELECT
+      course_id,
+      program,
+      year,
+      block
+    FROM block_course_assignment 
+  ) bc ON c.course_id = bc.course_id
+  WHERE c.course_id = ?;
+  `;
+  db.query(query, [courseId], (err, results) => {
+    if (err) {
+      console.error('Error executing the query: ' + err);
+      res.status(500).send('Error fetching data from the database');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get('/autogenetics/program-year-block', (req, res) => {
+
+  const query =  `SELECT count(*) from block_course_assignment;
+  `;
+  db.query(query,  (err, results) => {
+    if (err) {
+      console.error('Error executing the query: ' + err);
+      res.status(500).send('Error fetching data from the database');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get('/autogenetics/room', (req, res) => {
+  const sql = "SELECT * FROM room";
+  db.query(sql, (err, data) =>{
+      if(err){
+        console.log(err);
+        return res.json(err);
+      }
+        return res.json(data);
+    });
+});
+app.get('/autogenetics/rooms/:roomType', (req, res) => {
+const { roomType } = req.params;
+let sql;
+
+if (roomType === 'Regular' || roomType === 'Laboratory') {
+  sql = `SELECT * FROM room WHERE type = '${roomType}'`;
+} else {
+  sql = 'SELECT * FROM room WHERE type != "Laboratory"';
+}
+
+db.query(sql, (err, data) => {
+  if (err) {
+    console.log(err);
+    return res.json(err);
+  }
+  return res.json(data);
+});
+
+
+
+});
+
+app.get("/summer_sched/data", (req, res) => {
+  const sql = "SELECT * FROM summer_sched";
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error executing MySQL query: ", err);
+      res.status(500).json({ message: "Internal server error" });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+app.get("/summer_sched/room", (req, res) => {
+  const summerSlotsQuery = "SELECT SUM(slot) AS totalSlots FROM summer";
+  db.query(summerSlotsQuery, (err, summerResult) => {
+    if (err) {
+      console.error("Error executing MySQL query for summer slots: ", err);
+      res.status(500).json({ message: "Internal server error" });
+      return;
+    }
+
+    try {
+      const totalSummerSlots = summerResult[0].totalSlots || 0;
+
+      if (totalSummerSlots <= 15) {
+        const regularRoomQuery = "SELECT * FROM room WHERE type = 'regular' ORDER BY RAND() LIMIT 1";
+        const labRoomQuery = "SELECT * FROM room WHERE type = 'laboratory' ORDER BY RAND() LIMIT 2";
+
+        db.query(regularRoomQuery, (regularErr, regularResults) => {
+          if (regularErr) {
+            console.error("Error executing MySQL query for regular rooms: ", regularErr);
+            res.status(500).json({ message: "Internal server error" });
+            return;
+          }
+
+          db.query(labRoomQuery, (labErr, labResults) => {
+            if (labErr) {
+              console.error("Error executing MySQL query for laboratory rooms: ", labErr);
+              res.status(500).json({ message: "Internal server error" });
+              return;
+            }
+
+            // Concatenate the regular room and the first two laboratory rooms
+            const filteredRooms = [...regularResults, ...labResults];
+
+            res.json(filteredRooms);
+          });
+        });
+      } else {
+        // If the total sum of slots exceeds 15, return all rooms
+        const sql = "SELECT * FROM room";
+        db.query(sql, (roomErr, results) => {
+          if (roomErr) {
+            console.error("Error executing MySQL query for rooms: ", roomErr);
+            res.status(500).json({ message: "Internal server error" });
+            return;
+          }
+
+          res.json(results);
+        });
+      }
+    } catch (err) {
+      console.error("Error accessing totalSlots property: ", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+});
+
+
+
+app.post("/save-academic-year", (req, res) => {
+  const startYear = req.body.startYear;
+  const endYear = req.body.endYear;
+  const semester = req.body.semester;
+
+  db.query("INSERT INTO academic_year (start, end, sem) VALUES (?, ?, ?)", [startYear, endYear, semester], (err, result) => {
+    if (err) {
+      console.error('Error saving academic year:', err);
+      res.status(500).send("Error saving academic year");
+    } else {
+      console.log('Academic year added successfully!');
+      res.status(200).send("Academic year added successfully!");
+    }
   });
 });
 

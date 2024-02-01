@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import axios from 'axios';
 
 const Curriculum = () => {
   const [startYear, setStartYear] = useState('');
@@ -18,12 +19,23 @@ const Curriculum = () => {
     setSemester(event.target.value);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Perform actions with startYear, endYear, and semester values
-    console.log('Start Year:', startYear);
-    console.log('End Year:', endYear);
-    console.log('Semester:', semester);
+  
+    try {
+      // Send a POST request to your backend API endpoint
+      const response = await axios.post('http://localhost:8081/save-academic-year', {
+        startYear: startYear,
+        endYear: endYear,
+        semester: semester
+      });
+  
+      console.log('Academic year saved successfully:', response.data);
+      // Optionally, you can show a success message to the user
+    } catch (error) {
+      console.error('Error saving academic year:', error);
+      // Optionally, you can show an error message to the user
+    }
   };
 
   return (
