@@ -152,6 +152,7 @@
           <div>
               <Button variant="primary" onClick={openModal}>+ Summer Class</Button>
               <Button variant="danger" onClick={openModal}>Reset</Button>
+              
               <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
                 <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle float-right mt-2">
                   <span style={{ color: 'black' }}>{selectedFilter} <FaCaretDown /></span>

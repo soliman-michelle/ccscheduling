@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
 import axios from 'axios';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -15,6 +15,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
   const [error, setError] = useState('');
   const [showSpecializationExistsAlert, setShowSpecializationExistsAlert] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false); // State for success alert
+  const [total,setTotal] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,6 +27,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
           lastName: user.lname,
           role: user.role,
         }));
+        console.log("Special: ", + formattedUserData);
         setUserData(formattedUserData);
         const courseResponse = await axios.get('http://localhost:8081/specialization/courses', {
           params: {
@@ -51,6 +53,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
     if (show) {
       setName('');
       setCourse('');
+      setTotal(1);
       setSelectedUserId('');
       setSelectedCourseId('');
     }
@@ -75,7 +78,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !course) {
+    if (!name || !course || !total) {
       setError('All fields are required.');
       setShowErrorAlert(true);
       return;
@@ -146,42 +149,51 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
         <Modal.Body>
           <Form>
           <Form.Group controlId="name">
-  <Form.Label>Name</Form.Label>
-  <Form.Control
-    as="select"
-    value={name}
-    onChange={handleNameChange}
-  >
-    <option value="">Select or type a name</option>
-    {userData.map((user, index) => (
-      <option
-        key={index}
-        value={user.firstName + ' ' + user.lastName}
-      >
-        {user.firstName + ' ' + user.lastName}
-      </option>
-    ))}
-  </Form.Control>
-</Form.Group>
+            <Form.Label>Name</Form.Label>
+            <Form.Control
+              as="select"
+              value={name}
+              onChange={handleNameChange}
+            >
+              <option value="">Select or type a name</option>
+              {userData.map((user, index) => (
+                <option
+                  key={index}
+                  value={user.firstName + ' ' + user.lastName}
+                >
+                  {user.firstName + ' ' + user.lastName}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
 
-<Form.Group controlId="course">
-  <Form.Label>Course</Form.Label>
-  <Form.Control
-    as="select"
-    value={course}
-    onChange={handleCourseChange}
-  >
-    <option value="">Select or type a course</option>
-    {filteredCourseSuggestions.map((course, index) => (
-      <option
-        key={index}
-        value={course.course_code + ' ' + course.course_name}
-      >
-        {course.course_code + ' ' + course.course_name}
-      </option>
-    ))}
-  </Form.Control>
-</Form.Group>
+          <Form.Group controlId="course">
+            <Form.Label>Course</Form.Label>
+            <Form.Control
+              as="select"
+              value={course}
+              onChange={handleCourseChange}
+            >
+              <option value="">Select or type a course</option>
+              {filteredCourseSuggestions.map((course, index) => (
+                <option
+                  key={index}
+                  value={course.course_code + ' ' + course.course_name}
+                >
+                  {course.course_code + ' ' + course.course_name}
+                </option>
+              ))}
+            </Form.Control>
+          </Form.Group>
+
+          <Form.Group controlId="total">
+          <Form.Label>Slot</Form.Label>
+              <Form.Control
+                type="number"
+                value={total}
+                onChange={(e) => setTotal(e.target.value)}
+              />
+            </Form.Group>
 
           </Form>
         </Modal.Body>

@@ -117,8 +117,6 @@ useEffect(() => {
     }
     return population;
   };
-  
-  
 
   const generateRandomSchedule = async () => {
     try {
@@ -705,8 +703,6 @@ const Timetable = () => {
     </div>
   );
 };
-
-
 
   return (
     <div>

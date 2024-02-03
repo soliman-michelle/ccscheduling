@@ -153,6 +153,7 @@
         });
       });
 
+      
       // Function to send the reset password email
         const sendResetPasswordEmail = async (recipientEmail,  resetLink) => {
           try {
@@ -852,7 +853,7 @@ GROUP BY s.User_id;
     });
   });
 
-  app.get('specialization/course/:User_id', (req, res) => {
+  app.get('/specialization/course/:User_id', (req, res) => {
     const User_id = req.params.User_id;
     const sql = `
     SELECT s.*, c.course_code, c.course_name, u.fname, u.lname
@@ -871,7 +872,8 @@ GROUP BY s.User_id;
       }
     });
   });
-app.get('specialization/users', (req, res) => {
+
+app.get('/specialization/users', (req, res) => {
   db.query("SELECT User_id, fname, lname, role FROM users", (err, data) => {
       if (err) {
       return res.status(500).json({ error: "Failed to retrieve user data" });
@@ -881,7 +883,7 @@ app.get('specialization/users', (req, res) => {
   });
 });
 
-app.get('specialization/courses', (req, res) => {
+app.get('/specialization/courses', (req, res) => {
   const userRole = req.query.userRole;
 
   let sql = `
@@ -904,7 +906,7 @@ app.get('specialization/courses', (req, res) => {
 });
 
 // add
-app.post("specialization/create", (req, res) => {
+app.post("/specialization/create", (req, res) => {
 const User_id = req.body.User_id; // Use lowercase 'user_id'
 const course_id = req.body.course_id;
   console.log('Received user_id:', User_id);
@@ -919,7 +921,7 @@ const course_id = req.body.course_id;
 });  
 });
 
-app.get('specialization/unassigned-courses', (req, res) => {
+app.get('/specialization/unassigned-courses', (req, res) => {
 const sql = `
   SELECT *
   FROM courses
@@ -938,7 +940,7 @@ db.query(sql, (err, data) => {
 });
 });
 
-app.get('specialization/assign', (req, res) => {
+app.get('/specialization/assign', (req, res) => {
 const sql = `
 SELECT 
   c.course_code,
@@ -962,7 +964,7 @@ db.query(sql, (err, data) => {
 });
 });
 
-app.get("specialization/check/:name/:course", (req, res) => {
+app.get("/specialization/check/:name/:course", (req, res) => {
 const name = req.params.User_id;
 const course = req.params.course_id;
 db.query("SELECT * FROM specialization WHERE User_id = ? AND course_id = ?", [name, course], (err, data) => {
@@ -975,7 +977,7 @@ db.query("SELECT * FROM specialization WHERE User_id = ? AND course_id = ?", [na
 });
 
 //update
-app.put("specialization/:id/update", (req, res) => {
+app.put("/specialization/:id/update", (req, res) => {
   const specializationId = req.params.id;
   const sql = "UPDATE specialization SET `prof` = ?, `specialization` = ? WHERE id = ?";
   const values = [
@@ -995,7 +997,7 @@ app.put("specialization/:id/update", (req, res) => {
 
 
 // delete
-app.delete("specialization/:userId/:courseId/delete", async (req, res) => {
+app.delete("/specialization/:userId/:courseId/delete", async (req, res) => {
 const { userId, courseId } = req.params;
 
 try {
@@ -1535,7 +1537,6 @@ app.get("/autogenetics/block/:courseId", (req, res) => {
   });
 });
 
-
 app.get('/autogenetics/program-year-block/:courseId', (req, res) => {
   const courseId = req.params.courseId;
 
@@ -1609,7 +1610,11 @@ db.query(sql, (err, data) => {
 });
 
 app.get("/summer_sched/data", (req, res) => {
-  const sql = "SELECT * FROM summer_sched";
+  const sql = `SELECT * 
+  FROM summer_sched as sc
+  INNER JOIN summer as s ON sc.id = s.id
+  INNER JOIN users as u ON s.User_id = u.User_id
+  INNER Join courses as c ON s.course_id = c.course_id;`;
   db.query(sql, (err, results) => {
     if (err) {
       console.error("Error executing MySQL query: ", err);
@@ -1675,8 +1680,6 @@ app.get("/summer_sched/room", (req, res) => {
     }
   });
 });
-
-
 
 app.post("/save-academic-year", (req, res) => {
   const startYear = req.body.startYear;

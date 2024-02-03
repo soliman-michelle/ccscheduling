@@ -1,3 +1,6 @@
+* {
+    box-sizing: border-box;
+}
 .table-container {
     margin-top: 20px;
 }
@@ -13,17 +16,12 @@
     text-align: center;
 }
 
-.heads {
-    width: 7%;
-}
-
-.time {
-    padding: 10px 13px;
-}
-
+.heads,
+.time,
 .data {
-    padding: 10px 66px;
+    width: 10%;
 }
+
 
 .schedule-table th {
     background-color: #f2f2f2;

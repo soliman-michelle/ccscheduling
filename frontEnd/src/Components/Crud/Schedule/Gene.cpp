@@ -302,7 +302,7 @@ void Schedule::CalculateFitness()
 
 		bool po = false, go = false;
 		// check overlapping of classes for professors and student groups
-		for (int i = numberOfRooms, t = day * daySize + time; i > 0; i--, t += DAY_HOURS)
+		for (int i = numberOfRooms, t = day * daySize + time; 	; i--, t += DAY_HOURS)
 		{
 			// for each hour of class
 			for (int i = dur - 1; i >= 0; i--)
