@@ -1183,6 +1183,8 @@ app.get('/profs', (req, res) => {
   });
 });
 
+
+
 app.get('/profs/roles', (req, res) => {
   const roleId = req.params.roleId;
   const sql = 'SELECT * FROM role';
@@ -1624,6 +1626,22 @@ app.get("/summer_sched/data", (req, res) => {
     res.json(results);
   });
 });
+
+app.get('/summer_sched/prof/:userId', async (req, res) => {
+  try {
+      const userId = req.params.userId;
+      const professor = await fetchProfessorNameFromDatabase(userId);
+      if (professor) {
+          res.status(200).json({ fullName: professor.fullName });
+      } else {
+          res.status(404).json({ error: 'Professor not found' });
+      }
+  } catch (error) {
+      console.error('Error fetching professor name:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 app.get("/summer_sched/room", (req, res) => {
   const summerSlotsQuery = "SELECT SUM(slot) AS totalSlots FROM summer";

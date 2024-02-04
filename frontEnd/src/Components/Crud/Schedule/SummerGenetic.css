@@ -26,3 +26,7 @@
 .schedule-table th {
     background-color: #f2f2f2;
 }
+
+.online-schedule {
+    border: none;
+}
