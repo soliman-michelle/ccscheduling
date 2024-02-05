@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const ViewSchedule = () => {
-  const [programYearBlocks, setProgramYearBlocks] = useState([]);
+  // const [programYearBlocks, setProgramYearBlocks] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [specialization, setSpecialization] = useState([]);
   const [professors, setProfessors] = useState([]);
@@ -245,19 +245,19 @@ useEffect(() => {
     return [];
   }
 };
-const checkClassHour = async (professorId, classHours) => {
-  try {
-    const professor = professors.find(prof => prof.User_id === professorId);
-    if (professor) {
-      const maxHour = professor.max_hour;
-      return classHours > maxHour;
-    }
-    return false; // Professor not found
-  } catch (error) {
-    console.error('Error checking class hour: ', error);
-    return false;
-  }
-};
+// const checkClassHour = async (professorId, classHours) => {
+//   try {
+//     const professor = professors.find(prof => prof.User_id === professorId);
+//     if (professor) {
+//       const maxHour = professor.max_hour;
+//       return classHours > maxHour;
+//     }
+//     return false; // Professor not found
+//   } catch (error) {
+//     console.error('Error checking class hour: ', error);
+//     return false;
+//   }
+// };
   const getRandomTimeSlot = (schedule, block, room, classType) => {
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const timeSlots = ['7-8', '8-9', '9-10', '10-11', '11-12', '12-13', '13-14', '14-15', '15-16', '16-17', '17-18', '18-19'] 
@@ -361,7 +361,6 @@ const checkClassHour = async (professorId, classHours) => {
     return dayDistributionScore;
   };
   
-  
  // Select a schedule based on roulette wheel selection
 const rouletteWheelSelection = (population, fitnessScores) => {
 const totalFitness = fitnessScores.reduce((sum, score) => sum + score, 0);
@@ -396,7 +395,6 @@ const singlePointCrossover = (parent1, parent2) => {
 
   return [child1, child2];
 };
-
 
 const resolveConflicts = (schedule) => {
   let conflictsExist = true;
@@ -463,7 +461,6 @@ const findAlternativeSchedule = (schedule, classA, classB) => {
   return null;
 };
 
-
 // Example conflict resolution strategy: Swap conflicting classes
 const swapConflict = (schedule) => {
 const conflicts = findConflicts(schedule);
@@ -500,8 +497,6 @@ const findConflicts = (schedule) => {
   return conflicts;
 };
 
-
-  
   // Perform swap mutation on a schedule
   const swapMutation = (schedule) => {
     // Select two random classes for swapping

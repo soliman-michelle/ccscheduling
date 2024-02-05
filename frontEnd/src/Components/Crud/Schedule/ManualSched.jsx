@@ -116,8 +116,7 @@
 
       const handleGenerateSummerClasses = async () => {
         try {
-            // const response = await axios.post('http://localhost:8081/manual/generate');
-            // console.log("Generated summer classes: ", response.data);
+            
             setShowSummerGenetic(true);
             setShowTable(false); // Hide the table
             console.log("Clicked on Generate Summer Classes button");

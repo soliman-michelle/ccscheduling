@@ -24,7 +24,7 @@ import Prof from './Components/Crud/Prof/Prof';
 import Specialization from './Components/Crud/Specialization/Specialization';
 import Schedule from './Components/Crud/Schedule/Schedule';
 import AddSchedule from './Components/Crud/Schedule/AddSchedule';
-import SummerGenetic from "./Components/Crud/Schedule/SummerGenetic";
+// import SummerGenetic from "./Components/Crud/Schedule/SummerGenetic";
 
 function App() {
   return (
@@ -70,7 +70,7 @@ function App() {
         {/* Schedule */}
         <Route path='/schedule/*' element={<Schedule />} />
         <Route path='/schedule/summer/*' element={<Schedule />} />
-        <Route path='/schedule/summer/schedule/*' element={<SummerGenetic />} />
+        {/* <Route path='/schedule/summer/schedule/*' element={<SummerGenetic />} /> */}
         <Route path='/schedule/add/*' element={<AddSchedule />} />
         {/* Setting */}
 

@@ -302,7 +302,7 @@ void Schedule::CalculateFitness()
 
 		bool po = false, go = false;
 		// check overlapping of classes for professors and student groups
-		for (int i = numberOfRooms, t = day * daySize + time; 	; i--, t += DAY_HOURS)
+		for (int i = numberOfRooms, t = day * daySize + time;; i--, t += DAY_HOURS)
 		{
 			// for each hour of class
 			for (int i = dur - 1; i >= 0; i--)
@@ -337,7 +337,7 @@ void Schedule::CalculateFitness()
 		_criteria[ci + 3] = !po;
 
 		// student groups has no overlaping classes?
-		if (!go)
+		if (!go)	
 			score++;
 		_criteria[ci + 4] = !go;
 	}
