@@ -1565,6 +1565,21 @@ app.get('/autogenetics/program-year-block/:courseId', (req, res) => {
   });
 });
 
+app.get('/summer_sched/archive', (req, res) => {
+  const acadId = req.params.acadId;
+
+  const query =  `SELECT * from academic_year;
+  `;
+  db.query(query, [acadId], (err, results) => {
+    if (err) {
+      console.error('Error executing the query: ' + err);
+      res.status(500).send('Error fetching data from the database');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
 app.get('/autogenetics/program-year-block', (req, res) => {
 
   const query =  `SELECT count(*) from block_course_assignment;
@@ -1716,4 +1731,6 @@ app.post("/save-academic-year", (req, res) => {
 });
 
 
-  
+  app.listen(8081, () => {
+      console.log("Running...");
+  });

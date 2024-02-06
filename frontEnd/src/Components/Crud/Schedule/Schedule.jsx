@@ -4,6 +4,7 @@ import Sidebar from '../../Sidebar';
 import 'bootstrap/dist/css/bootstrap.css';
 import ViewSchedule from './ViewSchedule';
 import ManualSched from './ManualSched';
+import SummerGenetic from './SummerGenetic';
 
 const Schedule = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -55,7 +56,7 @@ const Schedule = () => {
                 </div>
               ) : (
                 <div>
-                  <ManualSched/>
+                  <SummerGenetic/>
                </div>
               )}
             </div>

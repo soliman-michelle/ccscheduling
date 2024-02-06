@@ -13,6 +13,8 @@ const Sidebar = ({ isSidebarOpen }) => {
     { label: 'Add Account', link: '/user/' },
     { label: 'Prof', link: '/prof/' },
     { label: 'Class Handle', link: '/specialization/' },
+    { label: 'Summer class', link: '/summer/' },
+
     ];
 
     const reset = [
