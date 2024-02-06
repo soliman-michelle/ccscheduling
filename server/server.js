@@ -1725,7 +1725,34 @@ app.post("/save-academic-year", (req, res) => {
       res.status(500).send("Error saving academic year");
     } else {
       console.log('Academic year added successfully!');
-      res.status(200).send("Academic year added successfully!");
+      // Create the archival schedule table dynamically
+      const tableName = `archived_schedule_${startYear}_${endYear}`;
+      const createTableQuery = `
+      CREATE TABLE ${tableName} (
+        summer_id INT(50) NOT NULL AUTO_INCREMENT,
+        id INT(50) NOT NULL,
+        block VARCHAR(20) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        day VARCHAR(100) NOT NULL,
+        start_time TIME DEFAULT NULL,
+        end_time TIME DEFAULT NULL,
+        room INT(50) NOT NULL,
+        color VARCHAR(255) NOT NULL,
+        start YEAR NOT NULL,
+        end YEAR NOT NULL,
+        sem VARCHAR(20) NOT NULL,
+        PRIMARY KEY (summer_id)
+      );      
+      `;
+      db.query(createTableQuery, (err, result) => {
+        if (err) {
+          console.error('Error creating archival schedule table:', err);
+          res.status(500).send("Error creating archival schedule table");
+        } else {
+          console.log('Archival schedule table created successfully!');
+          res.status(200).send("Academic year and archival schedule table added successfully!");
+        }
+      });
     }
   });
 });
