@@ -1293,6 +1293,21 @@ app.put("/summer_sched/:classId/update", (req, res) => {
     .catch(error => res.status(500).json({ error }));
 });
 
+app.put("/summer_sched/reset", (req, res) => {
+  const resetQuery = "UPDATE summer_sched SET `day` = NULL, `start_time` = NULL, `end_time` = NULL, `room` = NULL, `color` = NULL";
+  
+  db.query(resetQuery, (error, results) => {
+    if (error) {
+      console.error('Error resetting summer schedule:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      console.log('Summer schedule reset successfully.');
+      res.json({ success: true });
+    }
+  });
+});
+
+
 app.delete('/profs/:user_id/delete', (req, res) => {
   const userId = req.params.user_id; 
   db.query("DELETE FROM users WHERE User_id = ?", [userId], (err, data) => {

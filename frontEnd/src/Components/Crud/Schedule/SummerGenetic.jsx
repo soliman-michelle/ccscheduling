@@ -6,6 +6,8 @@
   import { Button} from 'react-bootstrap';
   import Dropdown from 'react-bootstrap/Dropdown';
   import { FaCaretDown } from 'react-icons/fa';
+  import ResetModal from "./ResetModal";
+
   const SummerGenetic = () => {
       const [summer, setSummer] = useState([]);
       const [room, setRoom] = useState([]);
@@ -579,7 +581,7 @@
     <div>
         <div className="row">
             <div className="col-md-3">
-            <Button variant="danger" onClick={openModal}>Reset</Button>
+            <ResetModal/>
             </div>
             <div className="col-md-3">
             <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
