@@ -1259,7 +1259,39 @@ app.put("/profs/:userId/update", (req, res) => {
   });
 });
 
+app.put("/summer_sched/:classId/update", (req, res) => {
+  const classId = req.params.classId;
+  const { 'bestSchedule': bestSchedule } = req.body;
 
+  console.log("Summer: ", classId);
+  console.log("re.body: ", req.body);
+  console.log("bestSchedule: ", bestSchedule);
+  const queries = bestSchedule.map(schedule => {
+    const { day, startTime, endTime, room, color } = schedule; // Updated variable names to match your object properties
+    return {
+      sql: "UPDATE summer_sched SET `day` = ?, `start_time` = ?, `end_time` = ?, `room` = ?, `color` = ?  WHERE summer_id = ? ",
+      values: [day, startTime, endTime, room.roomName, color, classId] // Updated variable names
+    };
+  });
+
+  const updateQueries = queries.map(query => {
+    return new Promise((resolve, reject) => {
+      db.query(query.sql, query.values, (err, data) => {
+        if (err) {
+          console.error('Error executing SQL query:', err);
+          reject(err);
+        } else {
+          console.log('Update successful. Data:', data);
+          resolve(data);
+        }
+      });
+    });
+  });
+
+  Promise.all(updateQueries)
+    .then(() => res.json({ success: true }))
+    .catch(error => res.status(500).json({ error }));
+});
 
 app.delete('/profs/:user_id/delete', (req, res) => {
   const userId = req.params.user_id; 

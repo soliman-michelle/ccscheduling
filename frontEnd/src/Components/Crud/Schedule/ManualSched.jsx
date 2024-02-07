@@ -5,8 +5,7 @@ import axios from 'axios';
 import { faPen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DeleteSummer from "./Delete";
-import Dropdown from 'react-bootstrap/Dropdown';
-import { FaCaretDown } from 'react-icons/fa';
+
 
 const ManualSched = () => {
     const [showModal, setShowModal] = useState(false);
@@ -22,7 +21,6 @@ const ManualSched = () => {
     const [isFilterDropdownOpen, setFilterDropdownOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState('Professor');
     const [showSummerGenetic, setShowSummerGenetic] = useState(false);
-    const [showTable, setShowTable] = useState(true); // State to control table visibility
 
     const openModal = () => {
         setShowModal(true);
@@ -137,17 +135,6 @@ const ManualSched = () => {
   return (
       <div>
         <Button variant="primary" onClick={openModal}>+ Summer Class</Button>
-        <Button variant="danger" onClick={openModal}>Reset</Button>
-        
-        <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
-          <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle float-right mt-2">
-            <span style={{ color: 'black' }}>{selectedFilter} <FaCaretDown /></span>
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={() => handleFilter('Professor')}>Professor</Dropdown.Item>
-            <Dropdown.Item onClick={() => handleFilter('Room')}>Room</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
         
         <Modal show={showModal} onHide={closeModal}>
           <Modal.Header closeButton>

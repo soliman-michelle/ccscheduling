@@ -7,11 +7,11 @@ import axios from 'axios';
 const Sidebar = ({ isSidebarOpen }) => {
   const [userData, setUserData] = useState(null); // State to store user data
   const dropdownItems = [
+    { label: 'Prof', link: '/prof/' },
     { label: 'Room', link: '/viewroom/' },
     { label: 'Block', link: '/block/' },
     { label: 'Course', link: '/course/' },
     { label: 'Add Account', link: '/user/' },
-    { label: 'Prof', link: '/prof/' },
     { label: 'Class Handle', link: '/specialization/' },
     { label: 'Summer class', link: '/summer/' },
 

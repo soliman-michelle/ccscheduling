@@ -23,7 +23,6 @@ const Curriculum = () => {
     event.preventDefault();
   
     try {
-      // Send a POST request to your backend API endpoint
       const response = await axios.post('http://localhost:8081/save-academic-year', {
         startYear: startYear,
         endYear: endYear,
@@ -31,10 +30,8 @@ const Curriculum = () => {
       });
   
       console.log('Academic year saved successfully:', response.data);
-      // Optionally, you can show a success message to the user
     } catch (error) {
       console.error('Error saving academic year:', error);
-      // Optionally, you can show an error message to the user
     }
   };
 

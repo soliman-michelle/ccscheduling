@@ -4,7 +4,8 @@
   import html2canvas from "html2canvas";
   import jsPDF from "jspdf";
   import { Button} from 'react-bootstrap';
-
+  import Dropdown from 'react-bootstrap/Dropdown';
+  import { FaCaretDown } from 'react-icons/fa';
   const SummerGenetic = () => {
       const [summer, setSummer] = useState([]);
       const [room, setRoom] = useState([]);
@@ -17,6 +18,21 @@
       const [fitnessScore, setFitnessScore] = useState(0); // State for fitness score
       const [academicYears, setAcademicYears] = useState([]);
       const [selectedAcademicYear, setSelectedAcademicYear] = useState('');
+      const [isFilterDropdownOpen, setFilterDropdownOpen] = useState(false);
+      const [selectedFilter, setSelectedFilter] = useState('Professor');
+      const [showModal, setShowModal] = useState(false);  
+
+      const toggleFilterDropdown = () => {
+        setFilterDropdownOpen(!isFilterDropdownOpen);
+      };
+
+      const openModal = () => {
+        setShowModal(true);
+    };
+      const handleFilter = (filter) => {
+        setSelectedFilter(filter);
+        toggleFilterDropdown();
+      };
 
       const fetchSummer = async () => {
         try {
@@ -218,76 +234,7 @@
 
           return formattedHours + ':' + paddedMins;
       };
-      const handleSavePDF = async () => {
-        setPdfLoading(true);
-    
-        try {
-            const pdf = new jsPDF("p", "mm", [215.9, 279.4]);
-    
-            for (let i = 0; i < professorsSchedule.length; i++) { // Changed from prof.length to professorsSchedule.length
-                const prof = professorsSchedule[i];
-                const scheduleTable = document.getElementById(`schedule-table-${i}`);
-    
-                if (universityInfo) {
-                    const universityLogoUrl = `http://localhost:8081/${universityInfo.universityLogo}`;
-                    const departmentLogoUrl = `http://localhost:8081/${universityInfo.departmentLogo}`;
-                    const schoolNameUppercase = universityInfo.schoolName.toUpperCase();
-    
-                    pdf.addImage(universityLogoUrl, 'JPEG', 20, 10, 25, 25);
-                    pdf.setFont("helvetica", "bold");
-                    pdf.text(schoolNameUppercase, 85, 18);
-                    pdf.setFont("helvetica", "normal");
-                    pdf.setFontSize(10);
-                    pdf.text(`${universityInfo.address}, Brgy. ${universityInfo.barangay}, Sta. Cruz, ${universityInfo.province}`, 70, 25);
-                    pdf.setFontSize(12);
-                    professorsSchedule.forEach((professor, index) => {
-                        if (i === index) {
-                            pdf.setFont("helvetica", "bold");
-                            pdf.text(professor.professorName, 85, 32);
-                            pdf.setFont("helvetica", "normal");
-                        }
-                    });
-    
-                    pdf.addImage(departmentLogoUrl, 'JPEG', 180, 10, 25, 25);
-                }
-    
-                await generatePDF(pdf, scheduleTable, prof.prof);
-    
-                if (i < professorsSchedule.length - 1) {
-                    pdf.addPage();
-                }
-            }
-    
-            pdf.save("summer_schedule.pdf");
-        } catch (error) {
-            console.error('Error generating PDF: ', error);
-        }
-    
-        setPdfLoading(false);
-    };
-    
-
-      const generatePDF = (pdf, table, roomName) => {
-          return new Promise((resolve, reject) => {
-              html2canvas(table, { scrollY: -window.scrollY })
-                  .then((canvas) => {
-                      const imgData = canvas.toDataURL("image/png");
-                      const imgWidth = 180;
-                      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                      const xPos = (pdf.internal.pageSize.getWidth() - imgWidth) / 2;
-                      const yPos = pdf.internal.pageSize.getHeight() / 2 - imgHeight / 2;
-
-                      pdf.addImage(imgData, "PNG", xPos, yPos, imgWidth, imgHeight);
-
-                      resolve();
-                  })
-                  .catch((error) => {
-                      console.error('Error generating PDF for room ', roomName, ': ', error);
-                      reject(error);
-                  });
-          });
-      };
+      
 
       const generateRandomPastelColor = () => {
           const r = Math.floor(Math.random() * 256);
@@ -297,7 +244,6 @@
       };
       
       const calculateFitness = (bestSchedule) => {
-        console.log("Calculate", bestSchedule);
         let score = 0;
     
         // Check for room overlapping of classes
@@ -340,7 +286,7 @@
     // Filter out non-overlapping schedules
     const overlaps = Object.values(roomMap).filter((schedules) => schedules.length > 1);
     return overlaps;
-};
+  };
 
       const tournamentSelection = (population, tournamentSize) => {
         let tournamentParticipants = [];
@@ -414,16 +360,15 @@
       async function geneticAlgorithm(initialPopulation, config) {
         let population = initialPopulation;
         let bestSchedule = initialPopulation[0];
-      
+        let finalBestSchedule = [];
         for (let generation = 0; generation < config.generations; generation++) {
           population = await selectAndMutate(population, config);
       
           bestSchedule = population[0];
         }
       
-        setBestSchedule(bestSchedule);
-      
-        return bestSchedule;
+        finalBestSchedule = bestSchedule;      
+        return finalBestSchedule;
       }
       
       async function selectAndMutate(population, config) {
@@ -490,19 +435,105 @@
         }
     }
 
+    const handleSavePDF = async () => {
+      setPdfLoading(true);
+
+      try {
+        for (const professorSchedule of professorsSchedule) {
+          // Iterate over each class in the professor's schedule
+          for (const classItem of professorSchedule.schedule) {
+              const classId = classItem.summer_id; 
+              console.log("classid: ", classId);
+      
+              // Iterate over bestSchedule to find schedules matching the current classId
+              for (const schedule of bestSchedule) {
+                  if (schedule.classId === classId) {
+                      const response = await axios.put(`http://localhost:8081/summer_sched/${classId}/update`, { bestSchedule: [schedule] });
+                      console.log('Update response:', response.data);
+                      break; // Once found, exit the loop to avoid unnecessary iterations
+                  }
+              }
+          }
+      }
+      
+
+          const pdf = new jsPDF("p", "mm", [215.9, 279.4]);
+
+          for (let i = 0; i < professorsSchedule.length; i++) {
+              const prof = professorsSchedule[i];
+              const scheduleTable = document.getElementById(`schedule-table-${i}`);
+
+              if (universityInfo) {
+                  const universityLogoUrl = `http://localhost:8081/${universityInfo.universityLogo}`;
+                  const departmentLogoUrl = `http://localhost:8081/${universityInfo.departmentLogo}`;
+                  const schoolNameUppercase = universityInfo.schoolName.toUpperCase();
+
+                  pdf.addImage(universityLogoUrl, 'JPEG', 20, 10, 25, 25);
+                  pdf.setFont("helvetica", "bold");
+                  pdf.text(schoolNameUppercase, 85, 18);
+                  pdf.setFont("helvetica", "normal");
+                  pdf.setFontSize(10);
+                  pdf.text(`${universityInfo.address}, Brgy. ${universityInfo.barangay}, Sta. Cruz, ${universityInfo.province}`, 70, 25);
+                  pdf.setFontSize(12);
+                  professorsSchedule.forEach((professor, index) => {
+                      if (i === index) {
+                          pdf.setFont("helvetica", "bold");
+                          pdf.text(professor.professorName, 85, 32);
+                          pdf.setFont("helvetica", "normal");
+                      }
+                  });
+
+                  pdf.addImage(departmentLogoUrl, 'JPEG', 180, 10, 25, 25);
+              }
+
+              await generatePDF(pdf, scheduleTable, prof.prof);
+
+              if (i < professorsSchedule.length - 1) {
+                  pdf.addPage();
+              }
+          }
+
+          pdf.save("summer_schedule.pdf");
+      } catch (error) {
+          console.error('Error updating summer schedule or generating PDF: ', error);
+      }
+
+      setPdfLoading(false);
+  };
+    const generatePDF = (pdf, table, roomName) => {
+        return new Promise((resolve, reject) => {
+            html2canvas(table, { scrollY: -window.scrollY })
+                .then((canvas) => {
+                    const imgData = canvas.toDataURL("image/png");
+                    const imgWidth = 180;
+                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                    const xPos = (pdf.internal.pageSize.getWidth() - imgWidth) / 2;
+                    const yPos = pdf.internal.pageSize.getHeight() / 2 - imgHeight / 2;
+
+                    pdf.addImage(imgData, "PNG", xPos, yPos, imgWidth, imgHeight);
+
+                    resolve();
+                })
+                .catch((error) => {
+                    console.error('Error generating PDF for room ', roomName, ': ', error);
+                    reject(error);
+                });
+        });
+    };
+
     const handleGenerateSummerClasses = async () => {
       try {
-        const initialSchedule = await findBestSchedule();
-        console.log("Find: ", initialSchedule);
+        const initialSchedule = await findBestSchedule(); 
         setBestSchedule(initialSchedule);
-        const fitness = await calculateFitness(initialSchedule); // Calculate fitness
-      setFitnessScore(fitness); // Set fitness score
+        const fitness = await calculateFitness(bestSchedule); 
+        setFitnessScore(fitness);
     } catch (error) {
         console.error('Error generating initial schedule: ', error);
     }
-};
+  };
 
-const renderTableBody = (professor) => {
+  const renderTableBody = (professor) => {
     const professorName = professor.professorName;
     const professorSchedule = bestSchedule.filter(classItem => classItem.prof === professorName);
 
@@ -536,30 +567,53 @@ const renderTableBody = (professor) => {
             ))}
         </tbody>
     );
-};
+  };
 
 
-const isTimeInRange = (currentTime, startTime, endTime) => {
+  const isTimeInRange = (currentTime, startTime, endTime) => {
     const [currentStart, currentEnd] = currentTime.split(" - ");
     return currentStart >= startTime && currentEnd <= endTime;
-};
+  };
     
-return (
+  return (
     <div>
-      <select id="academicYear" name="academicYear" value={selectedAcademicYear} onChange={handleAcademicYearChange}>
+        <div className="row">
+            <div className="col-md-3">
+            <Button variant="danger" onClick={openModal}>Reset</Button>
+            </div>
+            <div className="col-md-3">
+            <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
+          <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle float-right mt-2">
+            <span style={{ color: 'black' }}>{selectedFilter} <FaCaretDown /></span>
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={() => handleFilter('Professor')}>Professor</Dropdown.Item>
+            <Dropdown.Item onClick={() => handleFilter('Room')}>Room</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+            </div>
+            <div className="col-md-3">
+            <select id="academicYear" name="academicYear" value={selectedAcademicYear} onChange={handleAcademicYearChange}>
         {academicYears.map((year) => (
           <option key={year.academic_id} value={year.academic_id}>
             {`${year.start} - ${year.end} ${year.sem} Semester`}
           </option>
         ))}
       </select>
-      <button onClick={handleSavePDF} disabled={pdfLoading}>
-        {pdfLoading ? "Generating PDF..." : "Save as PDF"}
-      </button>
-      <Button variant="success" onClick={handleGenerateSummerClasses}>
-        Generate Summer Classes
-      </Button>
-  
+            </div>
+            <div className="col-md-3">
+            
+            </div>
+        </div>
+        <div className="card card-body mb-3 animated fadeInUp">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleGenerateSummerClasses}
+          >
+            Generate Classes
+          </button>
+  </div>
       <h1>Best Schedule</h1>
       {professorsSchedule.map((professor, professorIndex) => (
         <div key={professorIndex}>
@@ -577,9 +631,13 @@ return (
           </table>
         </div>
       ))}
+      <button onClick={handleSavePDF} disabled={pdfLoading}>
+      {pdfLoading ? "Generating PDF..." : "Save as PDF"}
+    </button>
+
     </div>
   );
 
-};
+  };
 
   export default SummerGenetic;
