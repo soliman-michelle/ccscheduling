@@ -29,6 +29,9 @@ const SummerGenetic = () => {
       setFilterDropdownOpen(!isFilterDropdownOpen);
     };
 
+    const openModal = () => {
+      setShowModal(true);
+  };
     const handleFilter = (filter) => {
       setSelectedFilter(filter);
       toggleFilterDropdown();
@@ -217,6 +220,7 @@ const SummerGenetic = () => {
       }
   };
   
+    
     function getRandomStartTime() {
         const classStartTimes = [7 * 60, 9 * 60, 11 * 60, 13 * 60]; 
 
@@ -234,6 +238,7 @@ const SummerGenetic = () => {
         return formattedHours + ':' + paddedMins;
     };
     
+
     const generateRandomPastelColor = () => {
         const r = Math.floor(Math.random() * 256);
         const g = Math.floor(Math.random() * 256);
@@ -312,6 +317,7 @@ const checkProfDayTimeOverlaps = (bestSchedule) => {
   return profOverlaps;
 };
 
+
     const tournamentSelection = (population, tournamentSize) => {
       let tournamentParticipants = [];
       for (let i = 0; i < tournamentSize; i++) {
@@ -385,8 +391,9 @@ const checkProfDayTimeOverlaps = (bestSchedule) => {
       let population = initialPopulation;
       let bestSchedule = initialPopulation[0];
       let finalBestSchedule = [];
-      for (let generation = 0; generation < config.maxGeneration; generation++) {
+      for (let generation = 0; generation < config.generations; generation++) {
         population = await selectAndMutate(population, config);
+    
         bestSchedule = population[0];
       }
     
@@ -401,10 +408,10 @@ const checkProfDayTimeOverlaps = (bestSchedule) => {
         let parent1 = tournamentSelection(population, config.tournamentSize);
         let parent2 = tournamentSelection(population, config.tournamentSize);
     
-        let [offspring1, offspring2] = crossover(parent1, parent2, config.crossoverProbability);
+        let [offspring1, offspring2] = crossover(parent1, parent2);
     
-        offspring1 = mutate(offspring1, config.mutationRate, config.mutationProbability);
-        offspring2 = mutate(offspring2, config.mutationRate, config.mutationProbability);
+        offspring1 = mutate(offspring1, config.mutationRate);
+        offspring2 = mutate(offspring2, config.mutationRate);
     
         let fitness1 = calculateFitness(offspring1);
         let fitness2 = calculateFitness(offspring2);
@@ -418,32 +425,141 @@ const checkProfDayTimeOverlaps = (bestSchedule) => {
     
       return newPopulation;
     }
-    
-    const findBestSchedule = async () => {
+  
+    async function findBestSchedule() {
       try {
-        let bestSchedule = await generateRandomSchedule(); 
-        let fitness = await calculateFitness(bestSchedule);
-    
-        // Continue generating schedules until the fitness score becomes 0 or conflicts are resolved
-        while (fitness !== 0) {
-          // If there are conflicts, regenerate the schedule
-          if (fitness > 0) {
-            bestSchedule = await generateRandomSchedule(); 
-            fitness = await calculateFitness(bestSchedule);
-          } else {
-            return bestSchedule;
+          let bestSchedule = await generateRandomSchedule(); 
+  
+          let fitness = await calculateFitness(bestSchedule); // Await the fitness calculation
+  
+            // Continue generating schedules until the fitness score becomes 0
+          while (fitness < 0.03) {
+              bestSchedule = await geneticAlgorithm(bestSchedule, {
+                  tournamentSize: 20,
+                  mutationRate: 0.05,
+                  generations: 1,
+                  fitness: fitness, // Pass current fitness score
+              });
+  
+              fitness = await calculateFitness(bestSchedule);
+  
+              if (fitness > 0) {
+                  bestSchedule = await geneticAlgorithm(bestSchedule, {
+                      tournamentSize: 5,
+                      mutationRate: 0.05,
+                      generations: 1,
+                      fitness: fitness, // Pass current fitness scores
+                  });
+  
+                  fitness = await calculateFitness(bestSchedule);
+              }
+  
+              setBestSchedule(bestSchedule); // Update the best schedule state
           }
-        }
-    
-        console.log("Best: ", bestSchedule);
-        return bestSchedule;
+          console.log("Best: " , bestSchedule);
+          return bestSchedule;
       } catch (error) {
-        console.error('Error finding best schedule: ', error);
-        return [];
+          console.error('Error finding best schedule: ', error);
+          return []; 
       }
-    };
+  }
+
+  const handleSavePDF = async () => {
+    setPdfLoading(true);
+
+    try {
+      for (const professorSchedule of professorsSchedule) {
+        // Iterate over each class in the professor's schedule
+        for (const classItem of professorSchedule.schedule) {
+            const classId = classItem.summer_id;
+            console.log("classid: ", classId);
+    
+            // Iterate over bestSchedule to find schedules matching the current classId
+            for (const schedule of bestSchedule) {
+                if (schedule.classId === classId) {
+                    // Include selected academic year and semester in the request body
+                    const payload = {
+                        bestSchedule: [schedule],
+                        selectedAcademicYear: selectedAcademicYear, // Include selected academic year
+                        selectedSemester: selectedSemester // Include selected semester
+                    };
+    
+                    console.log("PAY: ", payload);
+                    const response = await axios.put(`http://localhost:8081/summer_sched/${classId}/update`, payload);
+                    console.log('Update response:', response.data);
+                    break; // Once found, exit the loop to avoid unnecessary iterations
+                }
+            }
+        }
+    }
     
     
+
+        const pdf = new jsPDF("p", "mm", [215.9, 279.4]);
+
+        for (let i = 0; i < professorsSchedule.length; i++) {
+            const prof = professorsSchedule[i];
+            const scheduleTable = document.getElementById(`schedule-table-${i}`);
+
+            if (universityInfo) {
+                const universityLogoUrl = `http://localhost:8081/${universityInfo.universityLogo}`;
+                const departmentLogoUrl = `http://localhost:8081/${universityInfo.departmentLogo}`;
+                const schoolNameUppercase = universityInfo.schoolName.toUpperCase();
+
+                pdf.addImage(universityLogoUrl, 'JPEG', 20, 10, 25, 25);
+                pdf.setFont("helvetica", "bold");
+                pdf.text(schoolNameUppercase, 85, 18);
+                pdf.setFont("helvetica", "normal");
+                pdf.setFontSize(10);
+                pdf.text(`${universityInfo.address}, Brgy. ${universityInfo.barangay}, Sta. Cruz, ${universityInfo.province}`, 70, 25);
+                pdf.setFontSize(12);
+                professorsSchedule.forEach((professor, index) => {
+                    if (i === index) {
+                        pdf.setFont("helvetica", "bold");
+                        pdf.text(professor.professorName, 85, 32);
+                        pdf.setFont("helvetica", "normal");
+                    }
+                });
+
+                pdf.addImage(departmentLogoUrl, 'JPEG', 180, 10, 25, 25);
+            }
+
+            await generatePDF(pdf, scheduleTable, prof.prof);
+
+            if (i < professorsSchedule.length - 1) {
+                pdf.addPage();
+            }
+        }
+
+        pdf.save("summer_schedule.pdf");
+    } catch (error) {
+        console.error('Error updating summer schedule or generating PDF: ', error);
+    }
+
+    setPdfLoading(false);
+};
+  const generatePDF = (pdf, table, roomName) => {
+      return new Promise((resolve, reject) => {
+          html2canvas(table, { scrollY: -window.scrollY })
+              .then((canvas) => {
+                  const imgData = canvas.toDataURL("image/png");
+                  const imgWidth = 180;
+                  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                  const xPos = (pdf.internal.pageSize.getWidth() - imgWidth) / 2;
+                  const yPos = pdf.internal.pageSize.getHeight() / 2 - imgHeight / 2;
+
+                  pdf.addImage(imgData, "PNG", xPos, yPos, imgWidth, imgHeight);
+
+                  resolve();
+              })
+              .catch((error) => {
+                  console.error('Error generating PDF for room ', roomName, ': ', error);
+                  reject(error);
+              });
+      });
+  };
+
   const handleGenerateSummerClasses = async () => {
     try {
       const initialSchedule = await findBestSchedule(); 
@@ -489,107 +605,13 @@ const renderTableBody = (professor) => {
   );
 };
 
-const handleSavePDF = async () => {
-  setPdfLoading(true);
 
-  try {
-    for (const professorSchedule of professorsSchedule) {
-      // Iterate over each class in the professor's schedule
-      for (const classItem of professorSchedule.schedule) {
-          const classId = classItem.summer_id;
-          console.log("classid: ", classId);
-  
-          // Iterate over bestSchedule to find schedules matching the current classId
-          for (const schedule of bestSchedule) {
-              if (schedule.classId === classId) {
-                  // Include selected academic year and semester in the request body
-                  const payload = {
-                      bestSchedule: [schedule],
-                      selectedAcademicYear: selectedAcademicYear, // Include selected academic year
-                      selectedSemester: selectedSemester // Include selected semester
-                  };
-  
-                  console.log("PAY: ", payload);
-                  const response = await axios.put(`http://localhost:8081/summer_sched/${classId}/update`, payload);
-                  console.log('Update response:', response.data);
-                  break; // Once found, exit the loop to avoid unnecessary iterations
-              }
-          }
-      }
-  }
-  
-  
-
-      const pdf = new jsPDF("p", "mm", [215.9, 279.4]);
-
-      for (let i = 0; i < professorsSchedule.length; i++) {
-          const prof = professorsSchedule[i];
-          const scheduleTable = document.getElementById(`schedule-table-${i}`);
-
-          if (universityInfo) {
-              const universityLogoUrl = `http://localhost:8081/${universityInfo.universityLogo}`;
-              const departmentLogoUrl = `http://localhost:8081/${universityInfo.departmentLogo}`;
-              const schoolNameUppercase = universityInfo.schoolName.toUpperCase();
-
-              pdf.addImage(universityLogoUrl, 'JPEG', 20, 10, 25, 25);
-              pdf.setFont("helvetica", "bold");
-              pdf.text(schoolNameUppercase, 85, 18);
-              pdf.setFont("helvetica", "normal");
-              pdf.setFontSize(10);
-              pdf.text(`${universityInfo.address}, Brgy. ${universityInfo.barangay}, Sta. Cruz, ${universityInfo.province}`, 70, 25);
-              pdf.setFontSize(12);
-              professorsSchedule.forEach((professor, index) => {
-                  if (i === index) {
-                      pdf.setFont("helvetica", "bold");
-                      pdf.text(professor.professorName, 85, 32);
-                      pdf.setFont("helvetica", "normal");
-                  }
-              });
-
-              pdf.addImage(departmentLogoUrl, 'JPEG', 180, 10, 25, 25);
-          }
-
-          await generatePDF(pdf, scheduleTable, prof.prof);
-
-          if (i < professorsSchedule.length - 1) {
-              pdf.addPage();
-          }
-      }
-
-      pdf.save("summer_schedule.pdf");
-  } catch (error) {
-      console.error('Error updating summer schedule or generating PDF: ', error);
-  }
-
-  setPdfLoading(false);
-};
-const generatePDF = (pdf, table, roomName) => {
-    return new Promise((resolve, reject) => {
-        html2canvas(table, { scrollY: -window.scrollY })
-            .then((canvas) => {
-                const imgData = canvas.toDataURL("image/png");
-                const imgWidth = 180;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                const xPos = (pdf.internal.pageSize.getWidth() - imgWidth) / 2;
-                const yPos = pdf.internal.pageSize.getHeight() / 2 - imgHeight / 2;
-
-                pdf.addImage(imgData, "PNG", xPos, yPos, imgWidth, imgHeight);
-
-                resolve();
-            })
-            .catch((error) => {
-                console.error('Error generating PDF for room ', roomName, ': ', error);
-                reject(error);
-            });
-    });
-};
 
 const isTimeInRange = (currentTime, startTime, endTime) => {
   const [currentStart, currentEnd] = currentTime.split(" - ");
   return currentStart >= startTime && currentEnd <= endTime;
 };
-
+  
 return (
   <div>
       <div className="row">

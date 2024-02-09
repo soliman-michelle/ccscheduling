@@ -5,7 +5,7 @@ import axios from 'axios';
 import { faPen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DeleteSummer from "./Delete";
-
+import EditSummer from "./EditSummer";
 
 const ManualSched = () => {
     const [showModal, setShowModal] = useState(false);
@@ -20,8 +20,8 @@ const ManualSched = () => {
     const [showDeleteSuccessAlert, setShowDeleteSuccessAlert] = useState(false);
     const [isFilterDropdownOpen, setFilterDropdownOpen] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState('Professor');
-    const [showSummerGenetic, setShowSummerGenetic] = useState(false);
-
+    const [showEditCourseModal, setShowEditCourseModal] = useState(false);
+    const [selectedSummer, setSelectedSummer] = useState([]);
     const openModal = () => {
         setShowModal(true);
     };
@@ -30,6 +30,8 @@ const ManualSched = () => {
     };
     const toggleEditSummerModal = (summer) => {
       setSelectedCourseId(summer);
+      setShowEditCourseModal(true);
+
     };
     const handleFilter = (filter) => {
       setSelectedFilter(filter);
@@ -98,93 +100,115 @@ const ManualSched = () => {
         fetchRooms();
     }, []);
 
-    const handleDeleteSummer = async (blockId) => {
+    const handleEditSummer = async (professor, courses, updatedSummerData) => {
       try {
-        await axios.delete(`http://localhost:8081/block/${blockId}/delete`);
-  
-          setShowDeleteSuccessAlert(true);
-          setTimeout(() => {
-            setShowDeleteSuccessAlert(false);
-          }, 8000); // Hide alert after 3 seconds
+        const response = await axios.put(`http://localhost:8081/course/${professor}/${courses}/update`, updatedSummerData);
+        console.log('Response:', response.data); // Log the response
+        fetchSummer(); // Refresh data after updating
       } catch (error) {
-        console.error(`Error deleting block with ID ${blockId}:`, error);
+        console.error('Error:', error); // Check the error if there is one
       }
     };
+
+    const handleDeleteSummer = async (id) => { // Corrected parameter name from blockId to summer_id
+      try {
+        await axios.delete(`http://localhost:8081/manual/${id}/delete`); // Adjusted URL to match the backend route
+    
+        setSummer((prevblock) => prevblock.filter((summer) => summer.id !== id));
+
+        setShowDeleteSuccessAlert(true);
+        setTimeout(() => {
+          setShowDeleteSuccessAlert(false);
+        }, 8000); // Hide alert after 8 seconds
+      } catch (error) {
+        console.error(`Error deleting summer class with ID ${id}:`, error);
+      }
+    };
+    
     const handleSubmit = async (e) => {
       e.preventDefault();
-
+    
       const summer = {
-          course: selectedCourseId,
-          professor: selectedProfId, 
-          slot,
+        course: selectedCourseId,
+        professor: selectedProfId, 
+        slot,
       };
+    
       try {
-          const response = await axios.post('http://localhost:8081/manual/create', summer);
-          console.log("Summer: ", response.data);
+        const responseExistenceCheck = await axios.get(`http://localhost:8081/manual/check/${selectedProfId}/${selectedCourseId}`);
+        
+        if (responseExistenceCheck.data.exists) {
+          console.log("Summer class already exists:", responseExistenceCheck.data);
+        } else {
+          const responseAddSummer = await axios.post('http://localhost:8081/manual/create', summer);
+          console.log("Summer class added:", responseAddSummer.data);
           closeModal();
           fetchSummer();
-          // Resetting the fields to default values
-        setSelectedCourseId("");
-        setSelectedProfId("");
-        setSlot(1);
+          setSelectedCourseId("");
+          setSelectedProfId("");
+          setSlot(1);
+        }
       } catch (error) {
-          console.error('Error inserting data into the database: ', error);
+        console.error('Error inserting data into the database: ', error);
       }
-  };
+    };
+    
   
   return (
       <div>
         <Button variant="primary" onClick={openModal}>+ Summer Class</Button>
         
         <Modal show={showModal} onHide={closeModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>Add Summer Class</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <div className="card card-body mb-3 animated fadeInUp">
-              <Form>
-                <Form.Group controlId="course">
-                  <Form.Label>Select Course</Form.Label>
-                  <Form.Control as="select" value={selectedCourseId} onChange={(e) => setSelectedCourseId(e.target.value)}>
-                    <option value="">Select Course</option>
-                    {courses && courses.length > 0 ? (
-                      courses.map((course, index) => (
-                        <option key={index} value={course.course_id}>
-                          {course.course_code} - {course.course_name}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>
-                        {courses.length === 0 ? 'Loading courses...' : 'No courses available'}
-                      </option>
-                    )}
-                  </Form.Control>
-                </Form.Group>
-    
-                <Form.Group controlId="professor">
-                  <Form.Label>Select Professor</Form.Label>
-                  <Form.Control as="select" value={selectedProfId} onChange={(e) => setSelectedProfId(e.target.value)}>
-                    <option value="">Select Professor</option>
-                    {professors.map((professor, index) => (
-                      <option key={index} value={professor.User_id}>
-                        {professor.fname} {professor.lname}
-                      </option>
-                    ))}
-                  </Form.Control>
-                </Form.Group>
-    
-                <Form.Group controlId="slot">
-                  <Form.Label>Slot</Form.Label>
-                  <Form.Control type="number" value={slot} onChange={(e) => setSlot(parseInt(e.target.value))} min={1} max={3} />
-                </Form.Group>
-              </Form>
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={closeModal}>Close</Button>
-            <Button variant="primary" onClick={handleSubmit}>Add</Button>
-          </Modal.Footer>
-        </Modal>
+  <Modal.Header closeButton>
+    <Modal.Title>Add Summer Class</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+    <div className="card card-body mb-3 animated fadeInUp">
+      <Form onSubmit={handleSubmit}>
+        <Form.Group controlId="course">
+          <Form.Label>Select Course</Form.Label>
+          <Form.Control as="select" value={selectedCourseId} onChange={(e) => setSelectedCourseId(e.target.value)}>
+            <option value="">Select Course</option>
+            {courses && courses.length > 0 ? (
+              courses.map((course, index) => (
+                <option key={index} value={course.course_id}>
+                  {course.course_code} - {course.course_name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                {courses.length === 0 ? 'Loading courses...' : 'No courses available'}
+              </option>
+            )}
+          </Form.Control>
+        </Form.Group>
+
+        <Form.Group controlId="professor">
+          <Form.Label>Select Professor</Form.Label>
+          <Form.Control as="select" value={selectedProfId} onChange={(e) => setSelectedProfId(e.target.value)}>
+            <option value="">Select Professor</option>
+            {professors.map((professor, index) => (
+              <option key={index} value={professor.User_id}>
+                {professor.fname} {professor.lname}
+              </option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+
+        <Form.Group controlId="slot">
+          <Form.Label>Slot</Form.Label>
+          <Form.Control type="number" value={slot} onChange={(e) => setSlot(parseInt(e.target.value))} min={1} max={3} />
+        </Form.Group>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeModal}>Close</Button>
+          <Button variant="primary" type="submit">Add</Button>
+        </Modal.Footer>
+      </Form>
+    </div>
+  </Modal.Body>
+</Modal>
+
     
         <div>
           <table className="table">
@@ -221,7 +245,15 @@ const ManualSched = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      {showEditCourseModal && (
+        <EditSummer
+            show={showEditCourseModal}
+            handleClose={() => setShowEditCourseModal(false)}
+            selectedSummer={selectedSummer || {}} // Change selectedCourse to selectedSummer
+            onEdit={handleEditSummer}
+        />
+    )}
+  </div>
     );
 }   
 

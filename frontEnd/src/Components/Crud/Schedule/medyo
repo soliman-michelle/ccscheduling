@@ -431,6 +431,7 @@ const checkProfDayTimeOverlaps = (bestSchedule) => {
             bestSchedule = await generateRandomSchedule(); 
             fitness = await calculateFitness(bestSchedule);
           } else {
+            // If fitness is 0, the schedule is conflict-free, so return it
             return bestSchedule;
           }
         }

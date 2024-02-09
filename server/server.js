@@ -1261,27 +1261,49 @@ app.put("/profs/:userId/update", (req, res) => {
 
 app.put("/summer_sched/:classId/update", (req, res) => {
   const classId = req.params.classId;
-  const { 'bestSchedule': bestSchedule } = req.body;
+  const { bestSchedule, selectedAcademicYear, selectedSemester } = req.body;
 
+  // Split the selected academic year string into two separate years
+  const [startYear, endYear] = selectedAcademicYear.split(" - ");
+
+  // Create an academic year object
+  const academicYear = {
+    start: startYear.trim(), // Trim any leading or trailing spaces
+    end: endYear.trim() // Trim any leading or trailing spaces
+  };
+
+  console.log("hdsad: ", academicYear);
   console.log("Summer: ", classId);
-  console.log("re.body: ", req.body);
+  console.log("req.body: ", req.body);
   console.log("bestSchedule: ", bestSchedule);
-  const queries = bestSchedule.map(schedule => {
-    const { day, startTime, endTime, room, color } = schedule; // Updated variable names to match your object properties
+
+  const queries = bestSchedule.map((schedule) => {
+    const { day, startTime, endTime, room, color } = schedule;
     return {
-      sql: "UPDATE summer_sched SET `day` = ?, `start_time` = ?, `end_time` = ?, `room` = ?, `color` = ?  WHERE summer_id = ? ",
-      values: [day, startTime, endTime, room.roomName, color, classId] // Updated variable names
+      sql:
+        "UPDATE summer_sched SET `day` = ?, `start_time` = ?, `end_time` = ?, `room` = ?, `color` = ?, `start` = ?, `end` = ?, `sem` = ? WHERE summer_id = ? ",
+      values: [
+        day,
+        startTime,
+        endTime,
+        room.roomName,
+        color,
+        academicYear.start,
+        academicYear.end,
+        selectedSemester,
+        classId,
+      ],
     };
   });
 
-  const updateQueries = queries.map(query => {
+  const updateQueries = queries.map((query) => {
     return new Promise((resolve, reject) => {
       db.query(query.sql, query.values, (err, data) => {
         if (err) {
-          console.error('Error executing SQL query:', err);
+          console.error("Error executing SQL query:", err);
           reject(err);
         } else {
-          console.log('Update successful. Data:', data);
+          console.log("Update successful. Data:", data);
           resolve(data);
         }
       });
@@ -1290,7 +1312,12 @@ app.put("/summer_sched/:classId/update", (req, res) => {
 
   Promise.all(updateQueries)
     .then(() => res.json({ success: true }))
-    .catch(error => res.status(500).json({ error }));
+    .catch((error) => res.status(500).json({ error }));
+});
+
+
+app.put("/summer_sched/archive/update", (req, res) => {
+ 
 });
 
 app.put("/summer_sched/reset", (req, res) => {
@@ -1499,6 +1526,31 @@ app.post('/manual/create', (req, res) => {
       });
   });
 });
+
+app.get("/manual/check/:professor/:course", (req, res) => {
+  const professor = req.params.professor;
+  const course = req.params.course;
+  db.query("SELECT * FROM summer WHERE User_id = ? AND course_id = ?", [professor, course], (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    }
+    return res.json({ exists: data.length > 0 });
+  });
+});
+
+app.delete('/manual/:id/delete', (req, res) => {
+  const id = req.params.id; // Corrected from req.params.id to req.params.id
+  db.query('DELETE FROM summer WHERE id = ?', [id], (err, data) => {
+      if(err) {
+          return res.send(err);
+      }
+      return res.send(data);
+  });
+});
+
+
+
 
 app.get('/manual/display', (req, res) => {
   db.query("SELECT s.*, c.course_code, c.course_name, u.fname, u.lname FROM summer s INNER JOIN courses c ON s.course_id = c.course_id INNER JOIN users u ON s.User_id = u.User_id", (err, result) => {
@@ -1772,34 +1824,33 @@ app.post("/save-academic-year", (req, res) => {
       res.status(500).send("Error saving academic year");
     } else {
       console.log('Academic year added successfully!');
-      // Create the archival schedule table dynamically
-      const tableName = `archived_schedule_${startYear}_${endYear}`;
-      const createTableQuery = `
-      CREATE TABLE ${tableName} (
-        summer_id INT(50) NOT NULL AUTO_INCREMENT,
-        id INT(50) NOT NULL,
-        block VARCHAR(20) NOT NULL,
-        type VARCHAR(50) NOT NULL,
-        day VARCHAR(100) NOT NULL,
-        start_time TIME DEFAULT NULL,
-        end_time TIME DEFAULT NULL,
-        room INT(50) NOT NULL,
-        color VARCHAR(255) NOT NULL,
-        start YEAR NOT NULL,
-        end YEAR NOT NULL,
-        sem VARCHAR(20) NOT NULL,
-        PRIMARY KEY (summer_id)
-      );      
-      `;
-      db.query(createTableQuery, (err, result) => {
-        if (err) {
-          console.error('Error creating archival schedule table:', err);
-          res.status(500).send("Error creating archival schedule table");
-        } else {
-          console.log('Archival schedule table created successfully!');
-          res.status(200).send("Academic year and archival schedule table added successfully!");
-        }
-      });
+      // const tableName = `archived_schedule_${startYear}_${endYear}`;
+      // const createTableQuery = `
+      // CREATE TABLE ${tableName} (
+      //   summer_id INT(50) NOT NULL AUTO_INCREMENT,
+      //   id INT(50) NOT NULL,
+      //   block VARCHAR(20) NOT NULL,
+      //   type VARCHAR(50) NOT NULL,
+      //   day VARCHAR(100) NULL,
+      //   start_time TIME DEFAULT NULL,
+      //   end_time TIME DEFAULT NULL,
+      //   room INT(50) NULL,
+      //   color VARCHAR(255) NULL,
+      //   start YEAR NOT NULL,
+      //   end YEAR NOT NULL,
+      //   sem VARCHAR(20) NOT NULL,
+      //   PRIMARY KEY (summer_id)
+      // );      
+      // `;
+      // db.query(createTableQuery, (err, result) => {
+      //   if (err) {
+      //     console.error('Error creating archival schedule table:', err);
+      //     res.status(500).send("Error creating archival schedule table");
+      //   } else {
+      //     console.log('Archival schedule table created successfully!');
+      //     res.status(200).send("Academic year and archival schedule table added successfully!");
+      //   }
+      // });
     }
   });
 });
