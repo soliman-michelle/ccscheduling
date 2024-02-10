@@ -421,7 +421,7 @@ const Timetable = () => {
             {/* <div className="col-md-3">
             <Button variant="danger" onClick={openModal}>Reset</Button>
             </div> */}
-            <div className="col-md-3">
+            {/* <div className="col-md-3">
             <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
           <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle float-right mt-2">
             <span style={{ color: 'black' }}>{selectedFilter} <FaCaretDown /></span>
@@ -431,15 +431,16 @@ const Timetable = () => {
             <Dropdown.Item onClick={() => handleFilter('Room')}>Room</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-            </div>
+            </div> */}
             <div className="col-md-3">
             <select id="academicYear" name="academicYear" value={selectedAcademicYear} onChange={handleAcademicYearChange}>
-        {academicYears.map((year) => (
-          <option key={year.academic_id} value={year.academic_id}>
-            {`${year.start} - ${year.end} ${year.sem} Semester`}
-          </option>
-        ))}
-      </select>
+            {academicYears.map((year) => (
+              <option key={year.academic_id} value={year.academic_id}>
+                {`${year.start} - ${year.end}: ${year.sem}${year.sem === 1 ? 'st' : 'nd'} Semester`}
+              </option>
+            ))}
+          </select>
+
             </div>
         </div>
         <div className="card card-body card-dark bg-success-gradient bubble-shadow mb-4 animated fadeInDown">

@@ -10,29 +10,7 @@
       import randomstring from 'randomstring';
       import dotenv from 'dotenv';
       dotenv.config();
-      const crypto = require('crypto');
-      const accessTokenSecret = crypto.randomBytes(32).toString('hex');
-      const refreshTokenSecret = crypto.randomBytes(32).toString('hex');
 
-          app.post('/refresh', (req, res) => {
-      const refreshToken = req.cookies['refreshToken'];
-      if (!refreshToken) {
-        return res.status(401).send('Access Denied. No refresh token provided.');
-      }
-
-      try {
-        const decoded = jwt.verify(refreshToken, secretKey);
-        const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
-
-        res
-          .header('Authorization', accessToken)
-          .send(decoded.user);
-      } catch (error) {
-        return res.status(400).send('Invalid refresh token.');
-      }
-    });
-      console.log('Access Token Secret:', accessTokenSecret);
-      console.log('Refresh Token Secret:', refreshTokenSecret);
       console.log(process.env.DB_HOST);
       console.log(process.env.DB_USERNAME);
       console.log(process.env.DB_PASSWORD);
@@ -40,22 +18,11 @@
 
       const salt = 10;
       const app = express();
-      const PORT = process.env.PORT || 3000
       app.use(express.json());
-      const prodOrigins = [process.env.ORIGIN_1, process.env.ORIGIN_2]
-      const devOrigin = ['http://localhost:3000', ]
-      const allowedOrigins = process.env.NODE_ENV === 'ccsched' ? prodOrigins : devOrigin
       app.use(cors({
-        origin: (origin, callback) => {
-          if(allowedOrigins.includes(origin)) {
-            console.log(origin, allowedOrigins)
-            callback(null, true);
-          }else {
-            callback(new Error('Not Allowed by CORS'));
-          }
-        },
-        credentials: true,
+        origin: 'http://localhost:3000',
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
+        credentials: true
       }));
       
       app.use(cookieParser());
@@ -558,51 +525,49 @@
       });
       
       app.post('/userlogin', async (req, res) => {
-        const { username, password } = req.body;
-    
-        try {
-            const sql = "SELECT * FROM userlogin WHERE username = ?";
-            db.query(sql, [username], async (err, data) => {
-                if (err) {
-                    console.error("Error fetching user:", err);
-                    return res.json({ error: "Internal server error" });
-                }
-    
-                if (data.length > 0) {
-                    const storedHashedPassword = data[0].password;
-                    const userId = data[0].id;
-    
-                    try {
-                        const match = await bcrypt.compare(password, storedHashedPassword);
-    
-                        if (match) {
-                           
-                            const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET_KEY, { expiresIn: '15m' });
-    
-                            // Generate refresh token
-                            const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET_KEY);
-  
-                            res.cookie('refreshToken', refreshToken, { httpOnly: true });
-    
-                            return res.json({ accessToken });
-                        } else {
-                            console.log("Incorrect password for user:", username);
-                            return res.json({ error: "Password not matched!" });
-                        }
-                    } catch (error) {
-                        console.error("Comparison error:", error);
-                        return res.json({ error: "Comparison error" });
-                    }
-                } else {
-                    console.log("User not found:", username);
-                    return res.json({ error: "No data" });
-                }
-            });
-        } catch (error) {
-            console.error("Database error:", error);
-            return res.json({ error: "Database error" });
-        }
-    });
+          const username = req.body.username;
+          const enteredPassword = req.body.password;
+      
+          try {
+              const sql = "SELECT * FROM userlogin WHERE username = ?";
+              db.query(sql, [username], async (err, data) => {
+                  if (err) {
+                      console.error("Error fetching user:", err);
+                      return res.json({ error: "Internal server error" });
+                  }
+                  if (data.length > 0) {
+                      const storedHashedPassword = data[0].password;
+      
+                      try {
+                          // Log the entered and stored hashed passwords
+                          console.log("Entered Hashed Password:", enteredPassword);
+                          console.log("Stored Hashed Password:", storedHashedPassword);
+      
+                          // Compare the entered password with the stored hashed password
+                          const match = await bcrypt.compare(enteredPassword, storedHashedPassword);
+                          if (match) {
+                              const username = data[0].username;
+                              const token = jwt.sign({username}, "jwt-secret-key", {expiresIn: '1d'});
+                              res.cookie('token', token);
+                              return res.json({ Status: "Success" }); // Ensure the key is 'Status'
+                          } else {
+                              console.log("Incorrect password for user:", username);
+                              return res.json({ Error: "Password not matched!" });
+                          }
+                      } catch (error) {
+                          console.error("Comparison error:", error);
+                          return res.json({ error: "Comparison error" });
+                      }
+                  } else {
+                      console.log("User not found:", username);
+                      return res.json({ Error: "No data" });
+                  }
+              });
+          } catch (error) {
+              console.error("Database error:", error);
+              return res.json({ error: "Database error" });
+          }
+      });
 
       app.get('/userdata/:username', (req, res) => {
         const username = req.params.username;
@@ -914,7 +879,7 @@ app.get('/specialization/courses', (req, res) => {
   const userRole = req.query.userRole;
 
   let sql = `
-    SELECT course_id, course_code, course_name
+    SELECT *
     FROM courses
   `;
 
@@ -932,7 +897,59 @@ app.get('/specialization/courses', (req, res) => {
   });
 });
 
+// app.get('/specialization/courses/:courseId', (req, res) => {
+//   const userRole = req.query.userRole;
+//   const courseId = req.params.courseId;
+
+//   let sql = `
+//     SELECT *
+//     FROM courses
+//   `;
+
+//   if (userRole === '1') {
+//     // If the user's role is 1, filter courses with duration <= 3
+//     sql += ' WHERE duration <= 3';
+//   }
+
+//   if (courseId) {
+//     // If a courseId is provided, filter by courseId
+//     sql += ` WHERE course_id = ${courseId}`;
+//   }
+
+//   db.query(sql, (err, data) => {
+//     if (err) {
+//       return res.status(500).json({ error: "Failed to retrieve course data" });
+//     } else {
+//       return res.json(data);
+//     }
+//   });
+// });
+
+
 // add
+
+app.get('/specialization/courses/:courseId', (req, res) => {
+  const courseId = req.params.courseId;
+
+  let sql = `
+    SELECT *
+    FROM courses
+  `;
+
+  if (courseId) {
+    // If a courseId is provided, filter by courseId
+    sql += ` WHERE course_id = ${courseId}`;
+  }
+
+  db.query(sql, (err, data) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to retrieve course data" });
+    } else {
+      return res.json(data);
+    }
+  });
+});
+
 app.post("/specialization/create", (req, res) => {
 const User_id = req.body.User_id; // Use lowercase 'user_id'
 const course_id = req.body.course_id;
@@ -1226,7 +1243,7 @@ app.get('/profs/roles', (req, res) => {
 
 app.get('/profs/roles/:roleId', (req, res) => {
   const roleId = req.params.roleId;
-  const sql = 'SELECT role FROM role WHERE role_id = ?';
+  const sql = 'SELECT * FROM role WHERE role_id = ?';
   db.query(sql, [roleId], (err, data) => {
     if (err) {
       console.log(err);
@@ -1882,6 +1899,6 @@ app.post("/save-academic-year", (req, res) => {
   });
 });
 
-  app.listen(process.env.PORT, () => {
+  app.listen(8081, () => {
       console.log("Running...");
   });

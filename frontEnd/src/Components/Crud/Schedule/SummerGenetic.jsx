@@ -3,9 +3,8 @@ import axios from "axios";
 import "./SummerGenetic.css";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import Dropdown from 'react-bootstrap/Dropdown';
-import { FaCaretDown } from 'react-icons/fa';
-import ResetModal from "./ResetModal";
+
+// import ResetModal from "./ResetModal";
 
 const SummerGenetic = () => {
     const [summer, setSummer] = useState([]);
@@ -639,9 +638,19 @@ return (
   <div>
       <div className="row">
       <p id="currentYear">{currentYear}</p>
+      <div className="col-md-3">
+         
+      <select id="academicYear" name="academicYear" value={selectedAcademicYear} onChange={handleAcademicYearChange}>
+            {academicYears.map((year) => (
+              <option key={year.academic_id} value={year.academic_id}>
+                {`${year.start} - ${year.end}: ${year.sem}${year.sem === 1 ? 'st' : 'nd'} Semester`}
+              </option>
+            ))}
+          </select>
+          </div>
           <div className="col-md-3">
           {/* <ResetModal/> */}
-          <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
+          {/* <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
         <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle float-right mt-2">
           <span style={{ color: 'black' }}>{selectedFilter} <FaCaretDown /></span>
         </Dropdown.Toggle>
@@ -649,27 +658,7 @@ return (
           <Dropdown.Item onClick={() => handleFilter('Professor')}>Professor</Dropdown.Item>
           <Dropdown.Item onClick={() => handleFilter('Room')}>Room</Dropdown.Item>
         </Dropdown.Menu>
-      </Dropdown>
-          </div>
-          <div className="col-md-3">
-         
-                    <select id="academicYear" name="academicYear" value={selectedAcademicYear} onChange={handleAcademicYearChange}>
-            {academicYears.map((year) => (
-            <option key={year.academic_id} value={year.academic_id}>
-              {`${year.start} - ${year.end}`}
-            </option>
-            ))}
-            </select>
-            <select id="semester" name="semester" value={selectedSemester} onChange={handleSemesterChange}>
-            {semester.map((semester) => (
-            <option key={semester.academic_id} value={semester.academic_id}>
-              {`${semester.sem}`}
-            </option>
-            ))}
-            </select>
-          </div>
-          <div className="col-md-3">
-          
+      </Dropdown> */}
           </div>
       </div>
       <div className="card card-body mb-3 animated fadeInUp">
