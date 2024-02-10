@@ -25,66 +25,37 @@ const SummerGenetic = () => {
     const [selectedAcademicYear, setSelectedAcademicYear] = useState('2023 - 2024');
     const [selectedSemester, setSelectedSemester] = useState(2);
     const [isGenerating, setIsGenerating] = useState(false); // State variable to track class generation
-    const [currentYear, setCurrentYear] = useState('');
 
     const toggleFilterDropdown = () => {
       setFilterDropdownOpen(!isFilterDropdownOpen);
     };
-
-    const fetchCurrentAcademicYear = async () => {
-      try {
-        const response = await axios.get('http://localhost:8081/summer_sched/curriculum');
-        const { start, end, sem } = response.data[0];
-        setCurrentYear(`${sem === 1 ? '1st' : '2nd'} Semester A.Y. ${start}-${end}`);
-      } catch (error) {
-        console.error('Error fetching current academic year:', error);
-      }
-    };
-
-    useEffect(() => {
-      fetchCurrentAcademicYear();
-    }, []);
 
     const handleFilter = (filter) => {
       setSelectedFilter(filter);
       toggleFilterDropdown();
     };
 
-    
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const [summerResponse, roomResponse, universityInfoResponse] = await Promise.all([
-            axios.get('http://localhost:8081/summer_sched/data'),
-            axios.get('http://localhost:8081/summer_sched/room'),
-            axios.get('http://localhost:8081/university-info')
-          ]);
-    
-          const summerData = summerResponse.data;
-          const roomData = roomResponse.data;
-          const universityInfo = universityInfoResponse.data.universityInfo[0];
-    
+    const fetchSummer = async () => {
+      try {
+          const response = await axios.get('http://localhost:8081/summer_sched/data');
+          const summerData = response.data;
           setSummer(summerData);
-    
+
           const professors = {};
           summerData.forEach(item => {
-            const userId = item.User_id;
-            if (!professors[userId]) {
-              professors[userId] = { professorName: `${item.fname} ${item.lname}`, schedule: [] };
-            }
-            professors[userId].schedule.push(item);
+              const userId = item.User_id;
+              if (!professors[userId]) {
+                  professors[userId] = { professorName: `${item.fname} ${item.lname}`, schedule: [] };
+              }
+              professors[userId].schedule.push(item);
           });
-    
+
           setProfessorsSchedule(Object.values(professors));
-          setRoom(roomData);
-          setUniversityInfo(universityInfo);
-        } catch (error) {
-          console.error('Error fetching data: ', error);
-        }
-      };
-    
-      fetchData();
-    }, []);
+      } catch (error) {
+          console.error('Error fetching summer schedule: ', error);
+      }
+    };
+
     useEffect(() => {
       const fetchAcademicYears = async () => {
         try {
@@ -106,7 +77,36 @@ const SummerGenetic = () => {
     const handleSemesterChange = (event) => {
       setSelectedSemester(event.target.value);
     };
-    
+    const fetchUniversityInfo = async () => {
+        try {
+            const response = await axios.get('http://localhost:8081/university-info');
+            const infoArray = response.data.universityInfo;
+            if (infoArray.length > 0) {
+                const info = infoArray[0];
+                setUniversityInfo(info);
+            } else {
+                console.error('University information not found');
+            }
+        } catch (error) {
+            console.error('Error fetching university information: ', error);
+        }
+    };
+
+    const fetchRoom = async () => {
+        try {
+            const response = await axios.get('http://localhost:8081/summer_sched/room');
+            const roomData = response.data;
+            setRoom(roomData);
+        } catch (error) {
+            console.error('Error fetching room data: ', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchSummer();
+        fetchRoom();
+        fetchUniversityInfo();
+    }, []);
 
     const getRandomElement = (array) => {
         const randomIndex = Math.floor(Math.random() * array.length);
@@ -171,7 +171,18 @@ const SummerGenetic = () => {
   
               const classType = classItem.type;
   
-              
+              const classKey = `${profName}-${course_code}-${course_name}-${block}`; // Unique key
+              let color;
+  
+              // Check if color already generated for this combination
+              if (colorMap[classKey]) {
+                  color = colorMap[classKey];
+              } else {
+                  // If not generated, generate a new pastel color
+                  color = generateRandomPastelColor();
+                  colorMap[classKey] = color; // Store the color for future use
+              }
+  
               const duration = (classType === 'ftf' || classType === 'lab') ? 2 : 1;
   
               let room;
@@ -185,18 +196,6 @@ const SummerGenetic = () => {
               const classStartTime = getRandomStartTime();
               const durationInMinutes = duration * 60;
               const classEndTime = classStartTime + durationInMinutes;
-  
-              const classKey = `${profName}-${course_code}-${course_name}-${block}`; // Unique key
-              let color;
-  
-              // Check if color already generated for this combination
-              if (colorMap[classKey]) {
-                  color = colorMap[classKey];
-              } else {
-                  // If not generated, generate a new pastel color
-                  color = generateRandomPastelColor();
-                  colorMap[classKey] = color; // Store the color for future use
-              }
   
               scheduleTime.push({
                   classId,
@@ -245,71 +244,18 @@ const SummerGenetic = () => {
     
     const calculateFitness = (bestSchedule) => {
       let score = 0;
-      let sortedSchedule = [...bestSchedule]; // Create a copy of bestSchedule to avoid mutating the original array
-  
-      // Initialize an object to store overlaps
-      const overlaps = {
-          room: {},
-          profDayTime: {},
-          profDayTimeSlot: {}
-      };
-  
-      // Iterate over each schedule to check for profKey and roomKey overlaps
-      sortedSchedule.forEach((currentClass, index) => {
-          const { room, day, startTime, endTime, prof, course_code, course_name, block } = currentClass;
-          const roomName = room && room.roomName ? room.roomName : "N/A";
-          
-          const roomKey = roomName !== "N/A" ? `${roomName}-${day}-${startTime}-${endTime}` : `${prof}-${course_code}-${course_name}-${block}-${day}`;
-          const profDayBlockKey = `${prof}-${course_code}-${course_name}-${block}-${day}`; // Modified key to include block
-  
-          // Check for room overlap
-          if (overlaps.room[roomKey]) {
-              overlaps.room[roomKey].push(currentClass);
-          } else {
-              overlaps.room[roomKey] = [currentClass];
-          }
 
-           // Check for professor-day-block overlap
-           if (overlaps.profDayTime[profDayBlockKey]) {
-            overlaps.profDayTime[profDayBlockKey].push(currentClass);
-        } else {
-            overlaps.profDayTime[profDayBlockKey] = [currentClass];
-        }
-      });
+      const dayOverlap = checkProfDayTimeOverlaps(bestSchedule);
+      score += dayOverlap.length;
   
-      // Iterate over each prof-day-block group to check for overlaps
-      Object.values(overlaps.profDayTime).forEach((group) => {
-          if (group.length > 1) {
-              // Ensure that classes with the same prof, course_code, course_name, day, and block do not overlap
-              const uniqueClasses = [...new Set(group.map(({ course_code, course_name, day, block }) => `${course_code}-${course_name}-${day}-${block}`))];
-              if (uniqueClasses.length !== group.length) {
-                  // There are duplicate classes with the same prof, course_code, course_name, day, and block
-                  console.log("Duplicate classes found for the same prof, course, day, and block. Rejecting...");
-                  return; // Exit the iteration
-              }
+      // Check for room overlapping of classes
+      const roomOverlaps = checkRoomOverlaps(bestSchedule);
+      score += roomOverlaps.length;
+
+      console.log("roomOverlaps: " , roomOverlaps);
+      console.log("dayOverlap: " , dayOverlap);
+
   
-              // Sort the group based on the start times of the classes
-              group.sort((a, b) => {
-                  const startTimeA = convertTimeToMinutes(a.startTime);
-                  const startTimeB = convertTimeToMinutes(b.startTime);
-                  return startTimeA - startTimeB;
-              });
-  
-              // Check for overlaps within this group
-              for (let i = 0; i < group.length - 1; i++) {
-                  const currentClass = group[i];
-                  const nextClass = group[i + 1];
-  
-                  // Compare the end time of current class with the start time of the next class
-                  if (convertTimeToMinutes(currentClass.endTime) > convertTimeToMinutes(nextClass.startTime)) {
-                      score++; // Increment the score for overlapping classes
-                      console.log(`Overlap detected between ${currentClass.course_code} and ${nextClass.course_code}`);
-                  }
-              }
-          }
-      });
-  
-      // Calculate fitness score
       let result;
       if (bestSchedule.length > 0) {
           result = score / (bestSchedule.length * 5); // Assuming each subject contributes to a score of 5
@@ -317,15 +263,56 @@ const SummerGenetic = () => {
           result = 0; // Handle the case when bestSchedule is empty
       }
   
+      console.log("Fitness Result: " + result);
       setFitnessScore(result); // Update fitness score state directly
       return result;
   };
-  
-  
-  const convertTimeToMinutes = (time) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
+
+const checkRoomOverlaps = (bestSchedule) => {
+  const roomMap = {};
+
+  // Iterate over each schedule
+  bestSchedule.forEach((schedule) => {
+      const { room, day, startTime, endTime, prof } = schedule;
+      let roomName = room && room.roomName ? room.roomName : "N/A"; // Check if room and roomName exist
+
+      // If room is "N/A", include professor's name in the key
+      const key = roomName !== "N/A" ? `${roomName}-${day}-${startTime}-${endTime}` : `${roomName}-${day}-${prof}-${startTime}-${endTime}`;
+
+      // If the key already exists, there is an overlap
+      if (roomMap[key]) {
+          roomMap[key].push(schedule);
+      } else {
+          roomMap[key] = [schedule];
+      }
+  });
+
+  // Filter out non-overlapping schedules
+  const overlaps = Object.values(roomMap).filter((schedules) => schedules.length > 1);
+  return overlaps;
 };
+
+const checkProfDayTimeOverlaps = (bestSchedule) => {
+  const profMap = {};
+
+  // Iterate over each schedule
+  bestSchedule.forEach((schedule) => {
+      const { day, course_code, prof, block } = schedule;
+      const profKey = `${prof}-${course_code}-${block}-${day}`;
+
+      // Check if the professor key already exists, indicating an overlap
+      if (profMap[profKey]) {
+          profMap[profKey].push(schedule);
+      } else {
+          profMap[profKey] = [schedule];
+      }
+  });
+
+  // Filter out professor-day-time overlaps
+  const profOverlaps = Object.values(profMap).filter((schedules) => schedules.length > 1);
+  return profOverlaps;
+};
+
 
   function crossover(schedule1, schedule2) {
     // Choose a crossover point
@@ -347,36 +334,41 @@ const SummerGenetic = () => {
   }
   
     
-  function mutate(initialSchedule, mutationRate) {
-    const mutatedSchedule = [...initialSchedule];
+    function mutate(initialSchedule, mutationRate) {
+        if (Math.random() < mutationRate) {
+          console.log("mutate lang");
+            const mutationPoint1 = Math.floor(Math.random() * initialSchedule.length);
+            let mutationPoint2 = Math.floor(Math.random() * initialSchedule.length);
+    
+            while (mutationPoint1 === mutationPoint2) {
+                mutationPoint2 = Math.floor(Math.random() * initialSchedule.length);
+            }
+    
+            console.log("Mutation Points:", mutationPoint1, mutationPoint2);
+    
+            // Swap two random classes in the schedules
+            const mutatedSchedule = [...initialSchedule];
+            const temp = mutatedSchedule[mutationPoint1];
+            mutatedSchedule[mutationPoint1] = mutatedSchedule[mutationPoint2];
+            mutatedSchedule[mutationPoint2] = temp;
+    
+            console.log("Mutated Schedule:", mutatedSchedule);
 
-    if (Math.random() < mutationRate) {
-        console.log("Mutating...");
-
-        // Select a random class to mutate
-        const mutationIndex = Math.floor(Math.random() * mutatedSchedule.length);
-        const mutatedClass = mutatedSchedule[mutationIndex];
-
-        // Generate new day and time for the class
-        mutatedClass.day = getRandomElement(days);
-        mutatedClass.room = getRandomElement(room);
-
-        mutatedClass.startTime = convertMinutesToTime(getRandomStartTime());
-
-        console.log("Mutated Schedule:", mutatedSchedule);
-
-        return mutatedSchedule;
-    } else {
-        return mutatedSchedule;
+    
+            return mutatedSchedule;
+        } else {
+            console.log("No Mutation");
+            return initialSchedule;
+        }
     }
-}
 
+    
     function steadyStateReplacement(currentPopulation, offspring, populationSize) {
       // Combine current population and offspring
       const combinedPopulation = currentPopulation.concat(offspring);
     
       // Sort the combined population by fitness (ascending order)
-      combinedPopulation.sort((a, b) => calculateFitness(b) - calculateFitness(a));
+      combinedPopulation.sort((a, b) => calculateFitness(a) - calculateFitness(b));
     
       // Select the top individuals to form the next generation
       const nextGeneration = combinedPopulation.slice(0, populationSize);
@@ -446,7 +438,7 @@ const SummerGenetic = () => {
           }
   
           // Sort tournament participants based on fitness, with better individuals having lower fitness
-          tournamentParticipants.sort((a, b) => b.fitness - a.fitness);
+          tournamentParticipants.sort((a, b) => a.fitness - b.fitness);
   
           // Select the individual with the best fitness from the tournament
           selectedParticipants.push(tournamentParticipants[0]);
@@ -471,10 +463,10 @@ const SummerGenetic = () => {
 
 
   const yourConfigObject = {
-    maxGeneration: 10, // Maximum number of generations
-    tournamentSize: 10, // Size of tournament selection
-    crossoverProbability: 0.6, // Probability of crossover operation
-    mutationRate: 0.5, // Mutation rate
+    maxGeneration: 5, // Maximum number of generations
+    tournamentSize: 5, // Size of tournament selection
+    crossoverProbability: 0.8, // Probability of crossover operation
+    mutationRate: 0.2, // Mutation rate
     mutationProbability: 0.5 // Probability of mutation operation
 };
     
@@ -484,9 +476,9 @@ const handleGenerateSummerClasses = async () => {
 
       const initialPopulation = await generateInitialPopulation(populationSize);
       const bestSchedule = await geneticAlgorithm(initialPopulation, yourConfigObject);
+      setBestSchedule(bestSchedule);
       const fitness = await calculateFitness(bestSchedule);
       setFitnessScore(fitness);
-      setBestSchedule(bestSchedule);
   } catch (error) {
       console.error('Error generating initial population or running genetic algorithm: ', error);
   } finally {
@@ -518,11 +510,7 @@ const renderTableBody = (professor) => {
                   >
                     <p>{classItem.course_code} - {classItem.course_name}</p>
                     <p>{classItem.startTime} - {classItem.endTime}</p>
-                    <p>{classItem.room.roomName || "N/A"}</p>
-                    <p>{classItem.day}</p>
-                    <p>{classItem.block}</p>
-                    <p>{classItem.prof}</p>
-
+                    <p>{classItem.room.roomName}</p>
                   </div>
                 ))}
             </td>
@@ -638,9 +626,10 @@ const isTimeInRange = (currentTime, startTime, endTime) => {
 return (
   <div>
       <div className="row">
-      <p id="currentYear">{currentYear}</p>
           <div className="col-md-3">
-          {/* <ResetModal/> */}
+          <ResetModal/>
+          </div>
+          <div className="col-md-3">
           <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
         <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle float-right mt-2">
           <span style={{ color: 'black' }}>{selectedFilter} <FaCaretDown /></span>
@@ -652,7 +641,13 @@ return (
       </Dropdown>
           </div>
           <div className="col-md-3">
-         
+          <select id="semester" name="semester" value={selectedSemester} onChange={handleSemesterChange}>
+            {semester.map((semester) => (
+            <option key={semester.academic_id} value={semester.academic_id}>
+              {`${semester.sem}`}
+            </option>
+            ))}
+            </select>
                     <select id="academicYear" name="academicYear" value={selectedAcademicYear} onChange={handleAcademicYearChange}>
             {academicYears.map((year) => (
             <option key={year.academic_id} value={year.academic_id}>
@@ -660,13 +655,7 @@ return (
             </option>
             ))}
             </select>
-            <select id="semester" name="semester" value={selectedSemester} onChange={handleSemesterChange}>
-            {semester.map((semester) => (
-            <option key={semester.academic_id} value={semester.academic_id}>
-              {`${semester.sem}`}
-            </option>
-            ))}
-            </select>
+
           </div>
           <div className="col-md-3">
           
@@ -682,6 +671,7 @@ return (
       {isGenerating ? "Generating..." : "Generate Classes"} {/* Change button text based on generation state */}
   </button>
 </div>
+    <h1>Best Schedule</h1>
     {professorsSchedule.map((professor, professorIndex) => (
       <div key={professorIndex}>
         <h3>{professor.professorName} Schedule</h3>

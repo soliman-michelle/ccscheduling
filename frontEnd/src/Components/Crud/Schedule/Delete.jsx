@@ -32,7 +32,7 @@ const DeleteSummer = ({handleClose, handleDelete, blockId  }) => {
         <Modal.Title>Delete Block</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p>Are you sure you want to delete this List of Enrolles?</p>
+        <p>Are you sure you want to delete this summer class assignment?</p>
       </Modal.Body>
       <Modal.Footer>
       <Button variant="danger" onClick={handleConfirmDelete}>

@@ -25,6 +25,12 @@ const ViewSchedule = () => {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [universityInfo, setUniversityInfo] = useState([]);
   const [currentYear, setCurrentYear] = useState('');
+
+  const populationSize = 40;  
+  const maxGenerations = 10;
+  const crossoverRate = 0.8;
+  const mutationRate = 0.1;
+  
   const sidebarStyle = {
     paddingRight: '15%',
   };
@@ -47,6 +53,10 @@ const ViewSchedule = () => {
     fetchCurrentAcademicYear();
   }, []);
 
+
+  const openModal = () => {
+    setShowModal(true);
+};
   const handleFilter = (filter) => {
     setSelectedFilter(filter);
     toggleFilterDropdown();
@@ -306,7 +316,302 @@ useEffect(() => {
     return [];
   }
 };
+// const checkClassHour = async (professorId, classHours) => {
+//   try {
+//     const professor = professors.find(prof => prof.User_id === professorId);
+//     if (professor) {
+//       const maxHour = professor.max_hour;
+//       return classHours > maxHour;
+//     }
+//     return false; // Professor not found
+//   } catch (error) {
+//     console.error('Error checking class hour: ', error);
+//     return false;
+//   }
+// };
+  const getRandomTimeSlot = (schedule, block, room, classType) => {
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const timeSlots = ['7-8', '8-9', '9-10', '10-11', '11-12', '12-13', '13-14', '14-15', '15-16', '16-17', '17-18', '18-19'] 
 
+  
+    while (true) {
+      const randomDay = getRandomElement(days);
+      const randomTimeSlot = getRandomElement(timeSlots);
+      const conflictingClass = schedule.find(classInfo =>
+        !classInfo.break &&
+        classInfo.day === randomDay &&
+        classInfo.timeSlot === randomTimeSlot &&
+        classInfo.room.roomName === classInfo.room &&
+        classInfo.classType === classType
+      );
+  
+      if (!conflictingClass) {
+        return { day: randomDay, timeSlot: randomTimeSlot };
+
+  };
+    }
+  };
+  
+  
+  const getRandomElement = (array) => {
+    const randomIndex = Math.floor(Math.random() * array.length);
+    return array[randomIndex];
+  };
+  const calculateFitness = (bestSchedule) => {
+    const professorWorkloadScores = bestSchedule.map((classInfo) => {
+      // For simplicity, let's assume professors should have between 3 and 6 classes
+      const professorWorkload = classInfo.professor > 9;
+      return Math.abs(professorWorkload - 4); // Penalize deviations from the target workload
+    });
+  
+    // Criterion 2: Classroom overbooking
+    const roomOverbookingScores = bestSchedule.map((classInfo) => {
+      // For simplicity, let's assume a room can handle 3 classes per day
+      const roomOverbooking = classInfo.room > 13;
+      return Math.max(0, roomOverbooking - 10); // Penalize overbooking
+    });
+
+  //   const roomOverbookingScores = bestSchedule.reduce((overbookingScores, classInfo) => {
+  //     if (!classInfo.break) {
+  //         const { day, room } = classInfo;
+  //         // Initialize room count for the day if not already initialized
+  //         if (!overbookingScores[day]) {
+  //             overbookingScores[day] = {};
+  //         }
+  //         // Increment class count for the room
+  //         overbookingScores[day][room.roomName] = (overbookingScores[day][room.roomName] || 0) + 1;
+  //     }
+  //     return overbookingScores;
+  // }, {});
+  
+  // // Calculate scores based on room counts
+  // const totalRoomOverbookingScore = Object.values(roomOverbookingScores).reduce((totalScore, dayRoomCounts) => {
+  //     const dayScore = Object.values(dayRoomCounts).reduce((dayScore, roomCount) => {
+  //         // Calculate overbooking for each room in the day
+  //         return dayScore + Math.max(0, roomCount - 6); // Penalize if room count exceeds 6
+  //     }, 0);
+  //     return totalScore + dayScore; // Accumulate day scores
+  // }, 0);
+  
+  // console.log('Room Overbooking Scores:', totalRoomOverbookingScore);
+  
+  
+    // Criterion 3: Even distribution of classes across days
+    const dayDistributionScore = calculateDayDistributionScore(bestSchedule);
+  
+    const totalFitnessScore =
+      professorWorkloadScores.reduce((sum, score) => sum + score, 0) +
+      roomOverbookingScores.reduce((sum, score) => sum + score, 0) +
+      dayDistributionScore;
+  
+    console.log('Fitness for current schedule: ', totalFitnessScore);
+    return totalFitnessScore;
+  };
+  
+  const calculateDayDistributionScore = (bestSchedule) => {
+    // Your logic to calculate how evenly classes are distributed across days
+    // For simplicity, let's assume classes should be distributed as evenly as possible
+    const dayCounts = {
+      Monday: 0,
+      Tuesday: 0,
+      Wednesday: 0,
+      Thursday: 0,
+      Friday: 0,
+    };
+  
+    bestSchedule.forEach((classInfo) => {
+      if (!classInfo.break) {
+        dayCounts[classInfo.day]++;
+      }
+    });
+  
+    const maxClassesPerDay = Math.max(...Object.values(dayCounts));
+    const minClassesPerDay = Math.min(...Object.values(dayCounts));
+    const dayDistributionScore = maxClassesPerDay - minClassesPerDay;
+  
+    return dayDistributionScore;
+  };
+  
+ // Select a schedule based on roulette wheel selection
+const rouletteWheelSelection = (population, fitnessScores) => {
+const totalFitness = fitnessScores.reduce((sum, score) => sum + score, 0);
+const randomValue = Math.random() * totalFitness;
+let accumulatedFitness = 0;
+
+for (let i = 0; i < population.length; i++) {
+accumulatedFitness += fitnessScores[i];
+if (accumulatedFitness >= randomValue) {
+  // Return a copy of the selected schedule to avoid modifying the original
+  return [...population[i]];
+}
+}
+
+// If no schedule is selected, return an empty schedule or handle it as appropriate
+return [];
+};
+
+// Perform single-point crossover on two parent schedules
+const singlePointCrossover = (parent1, parent2) => {
+  // Your logic for single-point crossover
+  const crossoverPoint = Math.floor(Math.random() * parent1.length);
+
+  console.log('Crossover Point:', crossoverPoint);
+
+  const child1 = [...parent1.slice(0, crossoverPoint), ...parent2.slice(crossoverPoint)];
+  const child2 = [...parent2.slice(0, crossoverPoint), ...parent1.slice(crossoverPoint)];
+
+  // Handle conflicts in the children (if any)
+  resolveConflicts(child1);
+  resolveConflicts(child2);
+
+  return [child1, child2];
+};
+
+const resolveConflicts = (schedule) => {
+  let conflictsExist = true;
+
+  while (conflictsExist) {
+    conflictsExist = false;
+
+    for (let i = 0; i < schedule.length; i++) {
+      const currentClass = schedule[i];
+
+      if (!currentClass.break) {
+        for (let j = i + 1; j < schedule.length; j++) {
+          const otherClass = schedule[j];
+
+          if (
+            !otherClass.break &&
+            currentClass.day === otherClass.day &&
+            currentClass.room.roomName === otherClass.room.roomName &&
+            currentClass.timeSlot === otherClass.timeSlot
+          ) {
+            // Conflict found, attempt reassignment
+            const alternativeSchedule = findAlternativeSchedule(schedule, currentClass, otherClass);
+            
+            if (alternativeSchedule) {
+              schedule = alternativeSchedule;
+              conflictsExist = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (conflictsExist) {
+        break;
+      }
+    }
+  }
+
+  return schedule;
+};
+
+const findAlternativeSchedule = (schedule, classA, classB) => {
+  // Logic to find alternative days, rooms, or time slots for conflicting classes A and B
+  // Implement your reassignment strategy here
+
+  // Sample logic: Swap the days of the conflicting classes if available
+  const tempDay = classA.day;
+  classA.day = classB.day;
+  classB.day = tempDay;
+
+  // Verify if this swap resolves the conflicts
+  if (!hasConflicts(schedule)) {
+    return schedule;
+  }
+
+  // If the swap creates further conflicts, revert the changes
+  classA.day = tempDay;
+  classB.day = tempDay;
+
+  // You can try other reassignment strategies here
+  // ...
+
+  // Return null if no suitable reassignments are found
+  return null;
+};
+
+// Example conflict resolution strategy: Swap conflicting classes
+const swapConflict = (schedule) => {
+const conflicts = findConflicts(schedule);
+
+// Swap conflicting classes
+const [index1, index2] = conflicts;
+const temp = schedule[index1];
+schedule[index1] = schedule[index2];
+schedule[index2] = temp;
+
+return schedule;
+};
+
+const findConflicts = (schedule) => {
+  const conflicts = [];
+
+  for (let i = 0; i < schedule.length; i++) {
+    const currentClass = schedule[i];
+
+    if (!currentClass.break) {
+      for (let j = i + 1; j < schedule.length; j++) {
+        const otherClass = schedule[j];
+
+        if (!otherClass.break &&
+          currentClass.day === otherClass.day &&
+          currentClass.room.roomName === otherClass.room.roomName &&
+          currentClass.timeSlot === otherClass.timeSlot) {
+          conflicts.push(i, j);
+        }
+      }
+    }
+  }
+
+  return conflicts;
+};
+
+  // Perform swap mutation on a schedule
+  const swapMutation = (schedule) => {
+    // Select two random classes for swapping
+    const index1 = Math.floor(Math.random() * schedule.length);
+    const index2 = Math.floor(Math.random() * schedule.length);
+  
+    // Perform the swap
+    const temp = schedule[index1];
+    schedule[index1] = schedule[index2];
+    schedule[index2] = temp;
+  
+    // Check for conflicts, and revert the swap if there is a conflict
+    if (hasConflicts(schedule)) {
+      // Revert the swap
+      schedule[index2] = schedule[index1];
+      schedule[index1] = temp;
+      console.log('Swap reverted due to conflicts');
+    }
+  
+    return schedule;
+  };
+  
+  const hasConflicts = (schedule) => {
+    const conflicts = new Set();
+  
+    schedule.forEach((classInfo, index) => {
+      const duplicateIndex = schedule.findIndex((otherClass, otherIndex) =>
+        index !== otherIndex && // Avoid self-comparison
+        classInfo.room === otherClass.room &&
+        classInfo.timeSlot === otherClass.timeSlot &&
+        classInfo.day === otherClass.day &&
+        classInfo.classType === otherClass.classType && // Include classType comparison
+        classInfo.professor.User_id === otherClass.professor.User_id && // Check professor availability
+        classInfo.block === otherClass.block
+      );
+  
+      if (duplicateIndex !== -1) {
+        conflicts.add(index);
+        conflicts.add(duplicateIndex);
+      }
+    });
+  
+    return conflicts.size > 0;
+  };
   
   const handleSavePDF = async () => {
     setPdfLoading(true);
@@ -379,12 +684,136 @@ useEffect(() => {
       });
   };
   
- 
+  const geneticAlgorithm =  async () => {
+    let population = await initializePopulation(); 
+    let bestSchedule = population[0]; // Initialize with the first schedule
+
+    let bestFitness = calculateFitness(bestSchedule);
+
+    
+for (let generation = 0; generation < maxGenerations; generation++) {
+const fitnessScores = await Promise.all(population.map((schedule) => calculateFitness(schedule)));
+for (let i = 0; i < populationSize; i++) {
+  if (fitnessScores[i] > bestFitness) {
+    bestSchedule = population[i];
+    bestFitness = fitnessScores[i];
+  }
+  console.log(`Generation ${generation} Fitness Scores: `, fitnessScores);
+}
+      const newPopulation = [];
+
+      while (newPopulation.length < populationSize) {
+        const parent1 = rouletteWheelSelection(population, fitnessScores);
+        const parent2 = rouletteWheelSelection(population, fitnessScores);
+
+        if (Math.random() < crossoverRate) {
+          const [child1, child2] = singlePointCrossover(parent1, parent2);
+          newPopulation.push(child1, child2);
+        } else {
+          newPopulation.push(parent1.slice(), parent2.slice());
+        }
+
+        if (Math.random() < mutationRate) {
+          const mutatedChild = swapMutation(newPopulation[newPopulation.length - 1]);
+          newPopulation[newPopulation.length - 1] = mutatedChild;
+        }
+      }
+
+      
+      population = newPopulation;
+    }
+
+    bestSchedule = population.reduce((best, schedule) => {
+      const fitness = calculateFitness(schedule);
+      return fitness > calculateFitness(best) ? schedule : best;
+    }, population[0]);
+  
+    console.log('Best Schedule: ', bestSchedule);
+    return bestSchedule;
+  };
   // Handle Generate Classes with Genetic Algorithm
   const handleGenerateClasses = async () => {
-    
+    const bestSchedule = await geneticAlgorithm();
+    setBestSchedule(bestSchedule);
+    setLoading(true);
+    console.log('Selected Course:', selectedCourse);
+    console.log('Best Schedule:', bestSchedule);
 
   };
+
+
+const TimetableByProfessor = ({ professorSchedule }) => {
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  const times = ['7-8', '8-9', '9-10', '10-11', '11-12', '12-13', '13-14', '14-15', '15-16', '16-17', '17-18', '18-19'] ;
+
+  // Function to generate a random color
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+
+  // Group the professor's schedule by day and time
+  const scheduleByDayAndTime = {};
+  professorSchedule.forEach((classInfo) => {
+    if (!scheduleByDayAndTime[classInfo.day]) {
+      scheduleByDayAndTime[classInfo.day] = {};
+    }
+    if (!scheduleByDayAndTime[classInfo.day][classInfo.timeSlot]) {
+      scheduleByDayAndTime[classInfo.day][classInfo.timeSlot] = [];
+    }
+    scheduleByDayAndTime[classInfo.day][classInfo.timeSlot].push(classInfo);
+  });
+
+  return (
+    <div>
+      <h3>{`${professorSchedule[0].professor.fname} ${professorSchedule[0].professor.lname}'s Timetable`}</h3>
+      <table className="timetable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            {days.map((day, index) => (
+              <th key={index}>{day}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {times.map((time, index) => (
+            <tr key={index}>
+              <td>{time}</td>
+              {days.map((day, dayIndex) => (
+                <td key={dayIndex}>
+                  {scheduleByDayAndTime[day] &&
+                  scheduleByDayAndTime[day][time] &&
+                  scheduleByDayAndTime[day][time].length > 0 ? (
+                    <div className='text-center'>
+                      {scheduleByDayAndTime[day][time].map((classInfo, classIndex) => (
+                        <div key={classIndex} style={{ backgroundColor: getRandomColor() }}>
+                        {/* Render class information here */}
+                          {classInfo.course.course_name}
+                          <br/>
+                          {classInfo.room.roomName}
+                          <br/>
+                          {classInfo.block}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    ''
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 const Timetable = () => {
   // Assuming 'bestSchedule' holds the entire schedule information

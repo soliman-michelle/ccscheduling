@@ -204,7 +204,6 @@ const AddRoom = ({ show, handleClose, handleAdd }) => {
 };
 
 AddRoom.propTypes = {
-  show: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   handleAdd: PropTypes.func.isRequired,
 };

@@ -142,16 +142,7 @@
         });
       });
       
-    // Define an endpoint to fetch existing university information
-      app.get('/university-info', (req, res) => {
-        db.query('SELECT * FROM university_info', (err, existingData) => {
-          if (err) {
-            console.error('Databases Error:', err); // Log database errors
-            return res.status(500).json({ error: err.message });
-          }
-          return res.status(200).json({ universityInfo: existingData });
-        });
-      });
+    
 
       
       // Function to send the reset password email
@@ -659,7 +650,7 @@
         });
 
         app.get("/rooms", (req, res) => {
-          const sql = "SELECT * FROM room ORDER BY roomName ASC";
+          const sql = "SELECT * FROM room WHERE roomName <> 'N/A' ORDER BY roomName ASC";
           db.query(sql, (err, data) => {
             if (err) {
               console.log(err);
@@ -670,19 +661,20 @@
         });        
       
      // Check if a room exists with the given name (after removing spaces and special characters)
-      app.get("/rooms/check/:roomName", (req, res) => {
-        const originalRoomName = req.params.roomName;
-        const normalizedRoomName = originalRoomName.replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters
-        const normalizedRoomNameWithoutSpaces = normalizedRoomName.replace(/\s+/g, ''); // Remove spaces
-
-        db.query("SELECT * FROM room WHERE REPLACE(roomName, ' ', '') = ?", [normalizedRoomNameWithoutSpaces], (err, data) => {
-          if (err) {
-            console.log(err);
-            return res.json(err);
-          }
-          return res.json({ exists: data.length > 0 });
-        });
+     app.get("/rooms/check/:start/:end/:sem", (req, res) => {
+      const startYear = req.params.start;
+      const endYear = req.params.end;
+      const semester = req.params.sem;
+    
+      db.query("SELECT * FROM academic_year WHERE start = ? AND end = ? AND sem = ?", [startYear, endYear, semester], (err, data) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json(err);
+        }
+        return res.json({ exists: data.length > 0 });
       });
+    });
+    
 
       //add new room
       app.post("/rooms/create", (req, res) => {
@@ -1315,6 +1307,87 @@ app.put("/summer_sched/:classId/update", (req, res) => {
     .catch((error) => res.status(500).json({ error }));
 });
 
+app.get("/summer_sched/room", (req, res) => {
+  const summerSlotsQuery = "SELECT SUM(slot) AS totalSlots FROM summer";
+  db.query(summerSlotsQuery, (err, summerResult) => {
+    if (err) {
+      console.error("Error executing MySQL query for summer slots: ", err);
+      res.status(500).json({ message: "Internal server error" });
+      return;
+    }
+
+    try {
+      const totalSummerSlots = summerResult[0].totalSlots || 0;
+
+      if (totalSummerSlots <= 15) {
+        const regularRoomQuery = "SELECT * FROM room WHERE type = 'regular' ORDER BY RAND() LIMIT 2";
+        const labRoomQuery = "SELECT * FROM room WHERE type = 'laboratory' ORDER BY RAND() LIMIT 2";
+
+        db.query(regularRoomQuery, (regularErr, regularResults) => {
+          if (regularErr) {
+            console.error("Error executing MySQL query for regular rooms: ", regularErr);
+            res.status(500).json({ message: "Internal server error" });
+            return;
+          }
+
+          db.query(labRoomQuery, (labErr, labResults) => {
+            if (labErr) {
+              console.error("Error executing MySQL query for laboratory rooms: ", labErr);
+              res.status(500).json({ message: "Internal server error" });
+              return;
+            }
+
+            // Concatenate the regular room and the first two laboratory rooms
+            const filteredRooms = [...regularResults, ...labResults];
+
+            res.json(filteredRooms);
+          });
+        });
+      } else {
+        // If the total sum of slots exceeds 15, return all rooms
+        const sql = "SELECT * FROM room";
+        db.query(sql, (roomErr, results) => {
+          if (roomErr) {
+            console.error("Error executing MySQL query for rooms: ", roomErr);
+            res.status(500).json({ message: "Internal server error" });
+            return;
+          }
+
+          res.json(results);
+        });
+      }
+    } catch (err) {
+      console.error("Error accessing totalSlots property: ", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+});
+
+app.get("/summer_sched/data", (req, res) => {
+  const sql = `SELECT * 
+  FROM summer_sched as sc
+  INNER JOIN summer as s ON sc.id = s.id
+  INNER JOIN users as u ON s.User_id = u.User_id
+  INNER Join courses as c ON s.course_id = c.course_id;`;
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error executing MySQL query: ", err);
+      res.status(500).json({ message: "Internal server error" });
+      return;
+    }
+    res.json(results);
+  });
+});
+// Define an endpoint to fetch existing university information
+app.get('/university-info', (req, res) => {
+  db.query('SELECT * FROM university_info', (err, existingData) => {
+    if (err) {
+      console.error('Databases Error:', err); // Log database errors
+      return res.status(500).json({ error: err.message });
+    }
+    return res.status(200).json({ universityInfo: existingData });
+  });
+});
 
 app.put("/summer_sched/archive/update", (req, res) => {
  
@@ -1334,6 +1407,55 @@ app.put("/summer_sched/reset", (req, res) => {
   });
 });
 
+
+
+app.get('/summer_sched/archive', (req, res) => {
+  const acadId = req.params.acadId;
+
+  const query =  `SELECT * from academic_year;
+  `;
+  db.query(query, [acadId], (err, results) => {
+    if (err) {
+      console.error('Error executing the query: ' + err);
+      res.status(500).send('Error fetching data from the database');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get('/summer_sched/curriculum', (req, res) => {
+  const acadId = req.params.acadId;
+
+  const query =  `SELECT *
+  FROM academic_year
+  ORDER BY academic_id DESC
+  LIMIT 1;
+  `;
+  db.query(query, [acadId], (err, results) => {
+    if (err) {
+      console.error('Error executing the query: ' + err);
+      res.status(500).send('Error fetching data from the database');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
+app.get('/summer_sched/prof/:userId', async (req, res) => {
+  try {
+      const userId = req.params.userId;
+      const professor = await fetchProfessorNameFromDatabase(userId);
+      if (professor) {
+          res.status(200).json({ fullName: professor.fullName });
+      } else {
+          res.status(404).json({ error: 'Professor not found' });
+      }
+  } catch (error) {
+      console.error('Error fetching professor name:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 app.delete('/profs/:user_id/delete', (req, res) => {
   const userId = req.params.user_id; 
@@ -1664,20 +1786,7 @@ app.get('/autogenetics/program-year-block/:courseId', (req, res) => {
   });
 });
 
-app.get('/summer_sched/archive', (req, res) => {
-  const acadId = req.params.acadId;
 
-  const query =  `SELECT * from academic_year;
-  `;
-  db.query(query, [acadId], (err, results) => {
-    if (err) {
-      console.error('Error executing the query: ' + err);
-      res.status(500).send('Error fetching data from the database');
-    } else {
-      res.json(results);
-    }
-  });
-});
 
 app.get('/autogenetics/program-year-block', (req, res) => {
 
@@ -1720,97 +1829,6 @@ db.query(sql, (err, data) => {
   }
   return res.json(data);
 });
-
-
-
-});
-
-app.get("/summer_sched/data", (req, res) => {
-  const sql = `SELECT * 
-  FROM summer_sched as sc
-  INNER JOIN summer as s ON sc.id = s.id
-  INNER JOIN users as u ON s.User_id = u.User_id
-  INNER Join courses as c ON s.course_id = c.course_id;`;
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error("Error executing MySQL query: ", err);
-      res.status(500).json({ message: "Internal server error" });
-      return;
-    }
-    res.json(results);
-  });
-});
-
-app.get('/summer_sched/prof/:userId', async (req, res) => {
-  try {
-      const userId = req.params.userId;
-      const professor = await fetchProfessorNameFromDatabase(userId);
-      if (professor) {
-          res.status(200).json({ fullName: professor.fullName });
-      } else {
-          res.status(404).json({ error: 'Professor not found' });
-      }
-  } catch (error) {
-      console.error('Error fetching professor name:', error);
-      res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
-app.get("/summer_sched/room", (req, res) => {
-  const summerSlotsQuery = "SELECT SUM(slot) AS totalSlots FROM summer";
-  db.query(summerSlotsQuery, (err, summerResult) => {
-    if (err) {
-      console.error("Error executing MySQL query for summer slots: ", err);
-      res.status(500).json({ message: "Internal server error" });
-      return;
-    }
-
-    try {
-      const totalSummerSlots = summerResult[0].totalSlots || 0;
-
-      if (totalSummerSlots <= 15) {
-        const regularRoomQuery = "SELECT * FROM room WHERE type = 'regular' ORDER BY RAND() LIMIT 1";
-        const labRoomQuery = "SELECT * FROM room WHERE type = 'laboratory' ORDER BY RAND() LIMIT 2";
-
-        db.query(regularRoomQuery, (regularErr, regularResults) => {
-          if (regularErr) {
-            console.error("Error executing MySQL query for regular rooms: ", regularErr);
-            res.status(500).json({ message: "Internal server error" });
-            return;
-          }
-
-          db.query(labRoomQuery, (labErr, labResults) => {
-            if (labErr) {
-              console.error("Error executing MySQL query for laboratory rooms: ", labErr);
-              res.status(500).json({ message: "Internal server error" });
-              return;
-            }
-
-            // Concatenate the regular room and the first two laboratory rooms
-            const filteredRooms = [...regularResults, ...labResults];
-
-            res.json(filteredRooms);
-          });
-        });
-      } else {
-        // If the total sum of slots exceeds 15, return all rooms
-        const sql = "SELECT * FROM room";
-        db.query(sql, (roomErr, results) => {
-          if (roomErr) {
-            console.error("Error executing MySQL query for rooms: ", roomErr);
-            res.status(500).json({ message: "Internal server error" });
-            return;
-          }
-
-          res.json(results);
-        });
-      }
-    } catch (err) {
-      console.error("Error accessing totalSlots property: ", err);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
 });
 
 app.post("/save-academic-year", (req, res) => {
@@ -1823,38 +1841,11 @@ app.post("/save-academic-year", (req, res) => {
       console.error('Error saving academic year:', err);
       res.status(500).send("Error saving academic year");
     } else {
-      console.log('Academic year added successfully!');
-      // const tableName = `archived_schedule_${startYear}_${endYear}`;
-      // const createTableQuery = `
-      // CREATE TABLE ${tableName} (
-      //   summer_id INT(50) NOT NULL AUTO_INCREMENT,
-      //   id INT(50) NOT NULL,
-      //   block VARCHAR(20) NOT NULL,
-      //   type VARCHAR(50) NOT NULL,
-      //   day VARCHAR(100) NULL,
-      //   start_time TIME DEFAULT NULL,
-      //   end_time TIME DEFAULT NULL,
-      //   room INT(50) NULL,
-      //   color VARCHAR(255) NULL,
-      //   start YEAR NOT NULL,
-      //   end YEAR NOT NULL,
-      //   sem VARCHAR(20) NOT NULL,
-      //   PRIMARY KEY (summer_id)
-      // );      
-      // `;
-      // db.query(createTableQuery, (err, result) => {
-      //   if (err) {
-      //     console.error('Error creating archival schedule table:', err);
-      //     res.status(500).send("Error creating archival schedule table");
-      //   } else {
-      //     console.log('Archival schedule table created successfully!');
-      //     res.status(200).send("Academic year and archival schedule table added successfully!");
-      //   }
-      // });
+      console.log('Academic year saved successfully');
+      res.status(200).send("Academic year saved successfully");
     }
   });
 });
-
 
   app.listen(8081, () => {
       console.log("Running...");
