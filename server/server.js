@@ -10,7 +10,29 @@
       import randomstring from 'randomstring';
       import dotenv from 'dotenv';
       dotenv.config();
+      const crypto = require('crypto');
+      const accessTokenSecret = crypto.randomBytes(32).toString('hex');
+      const refreshTokenSecret = crypto.randomBytes(32).toString('hex');
 
+          app.post('/refresh', (req, res) => {
+      const refreshToken = req.cookies['refreshToken'];
+      if (!refreshToken) {
+        return res.status(401).send('Access Denied. No refresh token provided.');
+      }
+
+      try {
+        const decoded = jwt.verify(refreshToken, secretKey);
+        const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
+
+        res
+          .header('Authorization', accessToken)
+          .send(decoded.user);
+      } catch (error) {
+        return res.status(400).send('Invalid refresh token.');
+      }
+    });
+      console.log('Access Token Secret:', accessTokenSecret);
+      console.log('Refresh Token Secret:', refreshTokenSecret);
       console.log(process.env.DB_HOST);
       console.log(process.env.DB_USERNAME);
       console.log(process.env.DB_PASSWORD);
@@ -536,49 +558,51 @@
       });
       
       app.post('/userlogin', async (req, res) => {
-          const username = req.body.username;
-          const enteredPassword = req.body.password;
-      
-          try {
-              const sql = "SELECT * FROM userlogin WHERE username = ?";
-              db.query(sql, [username], async (err, data) => {
-                  if (err) {
-                      console.error("Error fetching user:", err);
-                      return res.json({ error: "Internal server error" });
-                  }
-                  if (data.length > 0) {
-                      const storedHashedPassword = data[0].password;
-      
-                      try {
-                          // Log the entered and stored hashed passwords
-                          console.log("Entered Hashed Password:", enteredPassword);
-                          console.log("Stored Hashed Password:", storedHashedPassword);
-      
-                          // Compare the entered password with the stored hashed password
-                          const match = await bcrypt.compare(enteredPassword, storedHashedPassword);
-                          if (match) {
-                              const username = data[0].username;
-                              const token = jwt.sign({username}, "jwt-secret-key", {expiresIn: '1d'});
-                              res.cookie('token', token);
-                              return res.json({ Status: "Success" }); // Ensure the key is 'Status'
-                          } else {
-                              console.log("Incorrect password for user:", username);
-                              return res.json({ Error: "Password not matched!" });
-                          }
-                      } catch (error) {
-                          console.error("Comparison error:", error);
-                          return res.json({ error: "Comparison error" });
-                      }
-                  } else {
-                      console.log("User not found:", username);
-                      return res.json({ Error: "No data" });
-                  }
-              });
-          } catch (error) {
-              console.error("Database error:", error);
-              return res.json({ error: "Database error" });
-          }
-      });
+        const { username, password } = req.body;
+    
+        try {
+            const sql = "SELECT * FROM userlogin WHERE username = ?";
+            db.query(sql, [username], async (err, data) => {
+                if (err) {
+                    console.error("Error fetching user:", err);
+                    return res.json({ error: "Internal server error" });
+                }
+    
+                if (data.length > 0) {
+                    const storedHashedPassword = data[0].password;
+                    const userId = data[0].id;
+    
+                    try {
+                        const match = await bcrypt.compare(password, storedHashedPassword);
+    
+                        if (match) {
+                           
+                            const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET_KEY, { expiresIn: '15m' });
+    
+                            // Generate refresh token
+                            const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET_KEY);
+  
+                            res.cookie('refreshToken', refreshToken, { httpOnly: true });
+    
+                            return res.json({ accessToken });
+                        } else {
+                            console.log("Incorrect password for user:", username);
+                            return res.json({ error: "Password not matched!" });
+                        }
+                    } catch (error) {
+                        console.error("Comparison error:", error);
+                        return res.json({ error: "Comparison error" });
+                    }
+                } else {
+                    console.log("User not found:", username);
+                    return res.json({ error: "No data" });
+                }
+            });
+        } catch (error) {
+            console.error("Database error:", error);
+            return res.json({ error: "Database error" });
+        }
+    });
 
       app.get('/userdata/:username', (req, res) => {
         const username = req.params.username;
