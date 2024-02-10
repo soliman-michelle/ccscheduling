@@ -18,11 +18,22 @@
 
       const salt = 10;
       const app = express();
+      const PORT = process.env.PORT || 3000
       app.use(express.json());
+      const prodOrigins = [process.env.ORIGIN_1, process.env.ORIGIN_2]
+      const devOrigin = ['http://localhost:3000', ]
+      const allowedOrigins = process.env.NODE_ENV === 'ccsched' ? prodOrigins : devOrigin
       app.use(cors({
-        origin: 'http://localhost:3000',
+        origin: (origin, callback) => {
+          if(allowedOrigins.includes(origin)) {
+            console.log(origin, allowedOrigins)
+            callback(null, true);
+          }else {
+            callback(new Error('Not Allowed by CORS'));
+          }
+        },
+        credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE'],
-        credentials: true
       }));
       
       app.use(cookieParser());
