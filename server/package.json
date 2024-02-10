@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app/server.js",
-    "dev": "node app/server.js"
+    "start": "server.js",
+    "dev": "server.js"
   },
   "keywords": [],
   "author": "",
