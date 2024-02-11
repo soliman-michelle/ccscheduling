@@ -112,7 +112,7 @@ const Home = () => {
         fetchDatas();
     }, []);
     useEffect(() => {
-        axios.get('https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app')
+        axios.get('https://ccsched.onrender.com/')
         .then(res => {
             if(res.data.Status === 'Success' ){
                 setAuth(true)
