@@ -22,7 +22,7 @@ console.log(process.env.DB_USERNAME);
 console.log(process.env.DB_PASSWORD);
 console.log(process.env.DB_DBNAME);
 
-const salt = 10;
+const salt = 10;  
 const app = express();
 const PORT = process.env.PORT || 3000
 app.use(express.json());
