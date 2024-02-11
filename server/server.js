@@ -9,8 +9,9 @@ import path from 'path';
 import nodemailer from 'nodemailer';
 import randomstring from 'randomstring';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
+
 dotenv.config();
-const crypto = require('crypto');
 const accessTokenSecret = crypto.randomBytes(32).toString('hex');
 const refreshTokenSecret = crypto.randomBytes(32).toString('hex');
 
