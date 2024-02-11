@@ -51,7 +51,7 @@ const LogIn = () => {
               // Store user data in local storage or state management
               localStorage.setItem('userData', JSON.stringify(response.data));
               // Redirect to home page or perform other actions
-              navigate('/dashboard');
+              navigate('/');
             })
             .catch((error) => {
               console.error('Error fetching user data:', error);

@@ -112,7 +112,7 @@ const Home = () => {
         fetchDatas();
     }, []);
     useEffect(() => {
-        axios.get('https://ccsched.onrender.com/dashboard')
+        axios.get('https://ccsched.onrender.com')
         .then(res => {
             if(res.data.Status === 'Success' ){
                 setAuth(true)
