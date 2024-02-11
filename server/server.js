@@ -14,23 +14,7 @@ const crypto = require('crypto');
 const accessTokenSecret = crypto.randomBytes(32).toString('hex');
 const refreshTokenSecret = crypto.randomBytes(32).toString('hex');
 
-    app.post('/refresh', (req, res) => {
-const refreshToken = req.cookies['refreshToken'];
-if (!refreshToken) {
-  return res.status(401).send('Access Denied. No refresh token provided.');
-}
-
-try {
-  const decoded = jwt.verify(refreshToken, secretKey);
-  const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
-
-  res
-    .header('Authorization', accessToken)
-    .send(decoded.user);
-} catch (error) {
-  return res.status(400).send('Invalid refresh token.');
-}
-});
+    
 console.log('Access Token Secret:', accessTokenSecret);
 console.log('Refresh Token Secret:', refreshTokenSecret);
 console.log(process.env.DB_HOST);
@@ -43,7 +27,7 @@ const app = express();
 const PORT = process.env.PORT || 3000
 app.use(express.json());
 const prodOrigins = [process.env.ORIGIN_1, process.env.ORIGIN_2]
-const devOrigin = ['http://localhost:3000', ]
+const devOrigin = ['http://localhost:8081', 'http://localhost:3000' ]
 const allowedOrigins = process.env.NODE_ENV === 'ccsched' ? prodOrigins : devOrigin
 app.use(cors({
   origin: (origin, callback) => {
@@ -92,6 +76,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+app.post('/refresh', (req, res) => {
+  const refreshToken = req.cookies['refreshToken'];
+  if (!refreshToken) {
+    return res.status(401).send('Access Denied. No refresh token provided.');
+  }
+  
+  try {
+    const decoded = jwt.verify(refreshToken, secretKey);
+    const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
+  
+    res
+      .header('Authorization', accessToken)
+      .send(decoded.user);
+  } catch (error) {
+    return res.status(400).send('Invalid refresh token.');
+  }
+  });
 //update existing
 app.post('/university-info/createOrUpdate', upload.fields([
   { name: 'universityLogo', maxCount: 1 },
