@@ -141,7 +141,7 @@ const ViewProf = () => {
                   return (
                     <tr key={userItem.User_id}>
                       <td>{id + 1}</td>
-                      <td>{userItem.fname + " " + userItem.mname + " " + userItem.lname}</td>
+                      <td>{userItem.fname + " " + userItem.lname}</td>
                       <td>{userItem.roleName}</td>
                       <td>
                         <button
