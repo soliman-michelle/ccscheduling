@@ -26,7 +26,7 @@ const Home = () => {
     axios.defaults.withCredentials = true;
     const blocks = async () => {
         try {
-        const res = await axios.get("https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app/blockCount");
+        const res = await axios.get("https://ccsched.onrender.com/blockCount");
         console.log("Block data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
@@ -48,7 +48,7 @@ const Home = () => {
 
     const fetchData = async () => {
         try {
-        const res = await axios.get("https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app/room");
+        const res = await axios.get("https://ccsched.onrender.com/room");
         console.log("Room data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
@@ -66,7 +66,7 @@ const Home = () => {
     
     const fetchDatas = async () => {
         try {
-        const res = await axios.get("https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app/prof");
+        const res = await axios.get("https://ccsched.onrender.com/prof");
         console.log("Prof data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
@@ -90,7 +90,7 @@ const Home = () => {
       }, [navigate]);
     const fetchClassesCount = async () => {
         try {
-        const res = await axios.get("https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app/classs"); // Update the endpoint to match the server-side route
+        const res = await axios.get("https://ccsched.onrender.com/classs"); // Update the endpoint to match the server-side route
         console.log("Classes data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
