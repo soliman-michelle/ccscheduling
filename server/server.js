@@ -15,7 +15,6 @@ dotenv.config();
 const accessTokenSecret = crypto.randomBytes(32).toString('hex');
 const refreshTokenSecret = crypto.randomBytes(32).toString('hex');
 
-    
 console.log('Access Token Secret:', accessTokenSecret);
 console.log('Refresh Token Secret:', refreshTokenSecret);
 console.log(process.env.DB_HOST);
@@ -28,18 +27,17 @@ const app = express();
 const PORT = process.env.PORT || 3000
 app.use(express.json());
 const prodOrigins = [process.env.ORIGIN_1, process.env.ORIGIN_2]
-const devOrigin = ['http://localhost:8081', 'http://localhost:3000' ]
+const devOrigin = ['https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app', 'http://localhost:8081', 'http://localhost:3000' ]
 const allowedOrigins = process.env.NODE_ENV === 'ccsched' ? prodOrigins : devOrigin
 app.use(cors({
   origin: (origin, callback) => {
-    if(allowedOrigins.includes(origin)) {
-      console.log(origin, allowedOrigins)
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
-    }else {
+    } else {
       callback(new Error('Not Allowed by CORS'));
     }
   },
-  credentials: true,
+  credentials: true, // if you need to allow credentials (cookies, authorization headers, etc.)
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
 
