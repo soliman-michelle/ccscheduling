@@ -57,7 +57,7 @@ const ViewCourse = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`http://localhost:8081/course`);
+      const res = await axios.get(`https://ccsched.onrender.com/course`);
       setCourse(res.data);
     } catch (err) {
       console.error(err);
@@ -71,7 +71,7 @@ const ViewCourse = () => {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const response = await axios.get('http://localhost:8081/course/program');
+        const response = await axios.get('https://ccsched.onrender.com/course/program');
         console.log("Course: ", response.data);
         setProgramOptions(response.data);
       } catch (error) {
@@ -84,7 +84,7 @@ const ViewCourse = () => {
 
   const handleEditCourse = async (courseCode, courseName, updatedCourseData) => {
     try {
-      const response = await axios.put(`http://localhost:8081/course/${courseCode}/${courseName}/update`, updatedCourseData);
+      const response = await axios.put(`https://ccsched.onrender.com/course/${courseCode}/${courseName}/update`, updatedCourseData);
       console.log('Response:', response.data); // Log the response
       fetchData(); // Refresh data after updating
     } catch (error) {
@@ -94,7 +94,7 @@ const ViewCourse = () => {
   
   const handleDeleteCourse = async (courseId) => {
     try {
-      await axios.delete(`http://localhost:8081/course/${courseId}/delete`);
+      await axios.delete(`https://ccsched.onrender.com/course/${courseId}/delete`);
       setCourse((prevCourse) => prevCourse.filter((courseItem) => courseItem.course_id !== courseId));
       setShowDeleteSuccessAlert(true);
       setTimeout(() => {

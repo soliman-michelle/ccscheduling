@@ -70,7 +70,7 @@ const EditBlock = ({ show, handleClose, selectedBlock, onEdit }) => {
 
     try {
       // Check if the room name already exists (after normalizing room names)
-      const response = await axios.get(`http://localhost:8081/block/check/${program}`);
+      const response = await axios.get(`https://ccsched.onrender.com/block/check/${program}`);
   
       if (response.data.exists && program !== selectedBlock.program) {
         // If room exists and it's not the same as the original name, show the alert

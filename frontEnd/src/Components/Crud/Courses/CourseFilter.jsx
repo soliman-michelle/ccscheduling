@@ -26,7 +26,7 @@ const CourseFilter = () => {
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:8081/course?program=${selectedProgram}`);
+        const response = await axios.get(`https://ccsched.onrender.com/course?program=${selectedProgram}`);
         console.log("Courses: ", response.data);
         setCourseDetails(response.data);
       } catch (error) {

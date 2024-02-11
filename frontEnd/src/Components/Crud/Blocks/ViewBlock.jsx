@@ -50,7 +50,7 @@ const handleEditError = () => {
 };
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/block");
+      const res = await axios.get("https://ccsched.onrender.com/block");
       setBlock(res.data);
     } catch (err) {
       console.error(err);
@@ -63,7 +63,7 @@ const handleEditError = () => {
 
   const handleEditBlock = async (blockId, updatedBlockData) => {
     try {
-      await axios.put(`http://localhost:8081/block/${blockId}/update`, updatedBlockData);
+      await axios.put(`https://ccsched.onrender.com/block/${blockId}/update`, updatedBlockData);
       fetchData(); // Refresh data after updating
       handleEditSuccess(); // Show success alert
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -76,7 +76,7 @@ const handleEditError = () => {
 
   const handleDeleteBlock = async (blockId) => {
     try {
-      await axios.delete(`http://localhost:8081/block/${blockId}/delete`);
+      await axios.delete(`https://ccsched.onrender.com/block/${blockId}/delete`);
 
       if(selectedBlock && selectedBlock.id === blockId){
         setShowEditBlockModal(false);
