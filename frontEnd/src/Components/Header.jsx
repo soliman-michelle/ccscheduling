@@ -13,11 +13,11 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
   useEffect(() => {
     const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     if (token) {
-      axios.get('http://localhost:8081/', { withCredentials: true })
+      axios.get('https://ccsched.onrender.com/', { withCredentials: true })
         .then(response => {
           const username = response.data.username;
           // Fetch user's data including image URL by username
-          axios.get(`http://localhost:8081/userdata/${username}`)
+          axios.get(`https://ccsched.onrender.com/userdata/${username}`)
             .then(userDataResponse => {
               // Assuming you have stored user data in state
               setUserData(userDataResponse.data);
@@ -27,7 +27,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
                 const user = userDataResponse.data[0];
                 // Assuming you have an <img> tag for displaying the image
                 return (
-                  <img src={`http://localhost:8081/${user.images}`} alt="Profile" style={{ width: '50px' }} />
+                  <img src={`https://ccsched.onrender.com/${user.images}`} alt="Profile" style={{ width: '50px' }} />
                 );
               }
             })
@@ -47,7 +47,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
   };
 
   const handleLogout = () => {
-    axios.get('http://localhost:8081/logout') // Create a route to handle logout
+    axios.get('https://ccsched.onrender.com/logout') // Create a route to handle logout
       .then(() => {
         localStorage.removeItem('userData'); // Remove stored user data
         window.location.href = '/login'; // Redirect to the login page
@@ -90,7 +90,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
      <Dropdown.Toggle id="dropdown-basic" className="custom-dropdown-toggle" style={{border: 'none'}}>
      {Array.isArray(userData) && userData.map((user) => (
           <div key={user.user_id}>
-            <img src={`http://localhost:8081/${user.images}`} alt="Profile" style={{width: '50px'}} />
+            <img src={`https://ccsched.onrender.com/${user.images}`} alt="Profile" style={{width: '50px'}} />
             <span>{user.firstName} {user.lastName} | {user.role}</span>
           </div>
         ))}

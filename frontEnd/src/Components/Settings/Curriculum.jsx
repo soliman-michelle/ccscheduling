@@ -26,7 +26,7 @@ const Curriculum = () => {
 
   const fetchCurrentAcademicYear = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/summer_sched/curriculum');
+      const response = await axios.get('https://ccsched.onrender.com/summer_sched/curriculum');
       const { start, end, sem } = response.data[0];
       setCurrentYear(`${sem === 1 ? '1st' : '2nd'} Semester A.Y. ${start}-${end}`);
     } catch (error) {
@@ -73,14 +73,14 @@ const Curriculum = () => {
     }
   
     try {
-      const checkResponse = await axios.get(`http://localhost:8081/rooms/check/${startYear}/${endYear}/${semester}`);
+      const checkResponse = await axios.get(`https://ccsched.onrender.com/rooms/check/${startYear}/${endYear}/${semester}`);
       if (checkResponse.data.exists) {
         setErrorMessage('The academic year and semester already exist.');
         setTimeout(() => setErrorMessage(''), 2000);
         return; 
       }else {
          // If not exist, save the academic year
-      const response = await axios.post('http://localhost:8081/save-academic-year', {
+      const response = await axios.post('https://ccsched.onrender.com/save-academic-year', {
         startYear: startYear,
         endYear: endYear,
         semester: semester

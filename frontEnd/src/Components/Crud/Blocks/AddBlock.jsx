@@ -85,13 +85,13 @@ const AddBlock = ({show, handleClose, handleAdd}) => {
         };
         
         try {
-          const response = await axios.get(`http://localhost:8081/block/check/${program}`);
+          const response = await axios.get(`https://ccsched.onrender.com/block/check/${program}`);
 
           if (response.data.exists) {
             setShowBlockExistsAlert(true);
           } else {
             
-          await axios.post('http://localhost:8081/block/create', newBlock);
+          await axios.post('https://ccsched.onrender.com/block/create', newBlock);
           handleAdd(newBlock);
           handleClose();
           setShowSuccessAlert(true);

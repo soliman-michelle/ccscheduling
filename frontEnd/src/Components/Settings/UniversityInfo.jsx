@@ -28,7 +28,7 @@ const UniversityInfo = () => {
   const buttonText = isCreating ? 'Create' : 'Update';
   useEffect(() => {
     // Fetch existing data when the component mounts
-    axios.get('http://localhost:8081/university-info')
+    axios.get('https://ccsched.onrender.com/university-info')
       .then(response => {
         console.log(response.data.universityInfo); // Log the received universityInfo
         setExistingUniversityInfo(response.data.universityInfo);
@@ -111,7 +111,7 @@ const UniversityInfo = () => {
       console.log(pair[0] + ': ' + pair[1]);
     }
     // Send the formData to your backend API using fetch or Axios
-    fetch('http://localhost:8081/university-info/createOrUpdate', {
+    fetch('https://ccsched.onrender.com/university-info/createOrUpdate', {
         method: 'POST',
         body: formData,
       })
@@ -158,7 +158,7 @@ const UniversityInfo = () => {
                   <div key={data.id}>
                     <label htmlFor="universityLogo">
                       <img
-                        src={`http://localhost:8081/${data.universityLogo}`}
+                        src={`https://ccsched.onrender.com/${data.universityLogo}`}
                         alt="University Logo"
                         id="universityLogo"
                         name='universityLogo'
@@ -202,7 +202,7 @@ const UniversityInfo = () => {
                   <div key={data.id}>
                     <label htmlFor="departmentLogo">
                       <img
-                        src={`http://localhost:8081/${data.departmentLogo}`}
+                        src={`https://ccsched.onrender.com/${data.departmentLogo}`}
                         alt="Department Logo"
                         name='departmentLogo'
                         id="departmentLogo"

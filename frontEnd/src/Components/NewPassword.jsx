@@ -29,7 +29,7 @@ const NewPassword = () => {
     if (password === confirmPassword) {
       try {
         // Verify the old password before changing the password
-        const oldPasswordResponse = await fetch('http://localhost:8081/verify-old-password/', {
+        const oldPasswordResponse = await fetch('https://ccsched.onrender.com/verify-old-password/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ const NewPassword = () => {
         }
   
         // Proceed to change the password if old password verification succeeds
-        const newPasswordResponse = await fetch('http://localhost:8081/reset-password/', {
+        const newPasswordResponse = await fetch('https://ccsched.onrender.com/reset-password/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
