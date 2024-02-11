@@ -554,8 +554,7 @@ app.post('/user/create', upload.single('images'), (req, res) => {
 });
 
 app.post('/userlogin', async (req, res) => {
-  const username = req.body.username;
-  const enteredPassword = req.body.password;
+  const { username, password } = req.body;
 
   try {
       const sql = "SELECT * FROM userlogin WHERE username = ?";
@@ -564,25 +563,27 @@ app.post('/userlogin', async (req, res) => {
               console.error("Error fetching user:", err);
               return res.json({ error: "Internal server error" });
           }
+
           if (data.length > 0) {
               const storedHashedPassword = data[0].password;
+              const userId = data[0].id;
 
               try {
-                  // Log the entered and stored hashed passwords
-                  console.log("Entered Hashed Password:", enteredPassword);
-                  console.log("Stored Hashed Password:", storedHashedPassword);
+                  const match = await bcrypt.compare(password, storedHashedPassword);
 
-                  // Compare the entered password with the stored hashed password
-                  const match = await bcrypt.compare(enteredPassword, storedHashedPassword);
                   if (match) {
-                      const username = data[0].username;
-                      const token = jwt.sign({username}, "jwt-secret-key", {expiresIn: '1d'});
-                      res.cookie('token', token);
-                      console.log("login successfully");
-                      return res.json({ Status: "Success" }); // Ensure the key is 'Status'
+                     
+                      const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET_KEY, { expiresIn: '15m' });
+
+                      // Generate refresh token
+                      const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET_KEY);
+
+                      res.cookie('refreshToken', refreshToken, { httpOnly: true });
+
+                      return res.json({ accessToken });
                   } else {
                       console.log("Incorrect password for user:", username);
-                      return res.json({ Error: "Password not matched!" });
+                      return res.json({ error: "Password not matched!" });
                   }
               } catch (error) {
                   console.error("Comparison error:", error);
@@ -590,7 +591,7 @@ app.post('/userlogin', async (req, res) => {
               }
           } else {
               console.log("User not found:", username);
-              return res.json({ Error: "No data" });
+              return res.json({ error: "No data" });
           }
       });
   } catch (error) {
