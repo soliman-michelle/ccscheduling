@@ -9,7 +9,7 @@ const PasswordReset = () => {
     const email = e.target.email.value;
 
     try {
-      const response = await fetch('https://ccscheds.vercel.app/forgot-password', {
+      const response = await fetch('https://ccsched.onrender.com/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
