@@ -40,7 +40,7 @@ const AddSchedule = () => {
   //fetch all prof listed
   useEffect(() => {const fetchProfessors = async () => {
       try {
-        const response = await axios.get('http://localhost:8081/autogenetics/professors');
+        const response = await axios.get('https://ccsched.onrender.com/autogenetics/professors');
         setProfessors(response.data);
       } catch (error) {
         console.error('Error fetching professors: ', error);
@@ -54,7 +54,7 @@ const AddSchedule = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await axios.get('http://localhost:8081/autogenetics/courses');
+        const response = await axios.get('https://ccsched.onrender.com/autogenetics/courses');
         setCourses(response.data);
 
         // Set course duration based on the first course in the response
@@ -77,7 +77,7 @@ const AddSchedule = () => {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await axios.get('http://localhost:8081/autogenetics/room');
+        const response = await axios.get('https://ccsched.onrender.com/autogenetics/room');
         setRooms(response.data);
       } catch (error) {
         console.error('Error fetching professors: ', error);
@@ -94,7 +94,7 @@ const AddSchedule = () => {
     if (courses.length > 0) {
       const fetchBlocks = async () => {
         try {
-          const totalBlocksResponse = await axios.get(`http://localhost:8081/autogenetics/block/${courses[0].course_id}`);
+          const totalBlocksResponse = await axios.get(`https://ccsched.onrender.com/autogenetics/block/${courses[0].course_id}`);
           const totalBlocks = totalBlocksResponse.data[0].total_blocks;
           console.log('Total Blocks:', totalBlocks);
         } catch (error) {
@@ -108,7 +108,7 @@ const AddSchedule = () => {
   //select all program, year and block for certain course
   const fetchAvailableBlocks = async (courseId) => {
     try {
-      const response = await axios.get(`http://localhost:8081/autogenetics/program-year-block/${courseId}`);
+      const response = await axios.get(`https://ccsched.onrender.com/autogenetics/program-year-block/${courseId}`);
       setAvailableBlocks(response.data);
 
     } catch (error) {
@@ -125,7 +125,7 @@ const AddSchedule = () => {
   useEffect(() => {
     const fetchSpecialization = async (userId) => {
       try {
-        const response = await axios.get(`http://localhost:8081/autogenetics/courses/${userId}`);
+        const response = await axios.get(`https://ccsched.onrender.com/autogenetics/courses/${userId}`);
         setSpecialization(response.data);
       } catch (error) {
         console.error('Error fetching Specializations: ', error);
@@ -178,12 +178,12 @@ const AddSchedule = () => {
   
           
           try {
-            const specializationResponse = await axios.get(`http://localhost:8081/autogenetics/courses/${randomProfessor.User_id}`);
+            const specializationResponse = await axios.get(`https://ccsched.onrender.com/autogenetics/courses/${randomProfessor.User_id}`);
             const specializations = specializationResponse.data;
   
             for (let k = 0; k < specializations.length; k++) {
               const randomSpecialization = specializations[k];
-              const response = await axios.get(`http://localhost:8081/autogenetics/program-year-block/${randomSpecialization.course_id}`);
+              const response = await axios.get(`https://ccsched.onrender.com/autogenetics/program-year-block/${randomSpecialization.course_id}`);
               const blocks = response.data;
   
               for (let l = 0; l < blocks.length; l++) {

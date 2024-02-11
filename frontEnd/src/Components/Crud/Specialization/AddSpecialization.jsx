@@ -20,7 +20,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userResponse = await axios.get('http://localhost:8081/specialization/users');
+        const userResponse = await axios.get('https://ccsched.onrender.com/specialization/users');
         const formattedUserData = userResponse.data.map((user) => ({
           User_id: user.User_id,
           firstName: user.fname,
@@ -29,7 +29,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
         }));
         console.log("Special: ", + formattedUserData);
         setUserData(formattedUserData);
-        const courseResponse = await axios.get('http://localhost:8081/specialization/courses', {
+        const courseResponse = await axios.get('https://ccsched.onrender.com/specialization/courses', {
           params: {
             userRole: formattedUserData.find((user) => user.firstName + ' ' + user.lastName === name)?.role,
           },
@@ -62,7 +62,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
   useEffect(() => {
     const fetchAssignedCourses = async () => {
       try {
-        const assignedCoursesResponse = await axios.get(`http://localhost:8081/specialization/assign/${selectedUserId}`);
+        const assignedCoursesResponse = await axios.get(`https://ccsched.onrender.com/specialization/assign/${selectedUserId}`);
         const assignedCoursesIds = assignedCoursesResponse.data.map((course) => course.course_id);
         const filteredCourses = courseData.filter((course) => !assignedCoursesIds.includes(course.course_id));
         setCourseData(filteredCourses);
@@ -96,7 +96,7 @@ const AddSpecialization = ({ show, handleClose, handleAdd, userRole }) => {
 
       try {
         console.log('newSpecialization:', newSpecialization);
-        await axios.post('http://localhost:8081/specialization/create', newSpecialization);
+        await axios.post('https://ccsched.onrender.com/specialization/create', newSpecialization);
         handleAdd(newSpecialization);
         handleClose();
       } catch (error) {

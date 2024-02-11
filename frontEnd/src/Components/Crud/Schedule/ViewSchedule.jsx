@@ -35,7 +35,7 @@ const ViewSchedule = () => {
 
   const fetchCurrentAcademicYear = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/summer_sched/curriculum');
+      const response = await axios.get('https://ccsched.onrender.com/summer_sched/curriculum');
       const { start, end, sem } = response.data[0];
       setCurrentYear(`${sem === 1 ? '1st' : '2nd'} Semester A.Y. ${start}-${end}`);
     } catch (error) {
@@ -67,7 +67,7 @@ const ViewSchedule = () => {
 
   const fetchUniversityInfo = async () => {
     try {
-        const response = await axios.get('http://localhost:8081/university-info');
+        const response = await axios.get('https://ccsched.onrender.com/university-info');
         const infoArray = response.data.universityInfo;
         if (infoArray.length > 0) {
             const info = infoArray[0];
@@ -83,7 +83,7 @@ const ViewSchedule = () => {
  useEffect(() => {
         const fetchAcademicYears = async () => {
           try {
-            const response = await axios.get('http://localhost:8081/summer_sched/archive');
+            const response = await axios.get('https://ccsched.onrender.com/summer_sched/archive');
             setAcademicYears(response.data); // Assuming response.data is an array of academic years
           } catch (error) {
             console.error('Error fetching academic years: ', error);
@@ -101,9 +101,9 @@ const ViewSchedule = () => {
 const fetchData = async () => {
   try {
     const [professorsResponse, coursesResponse, roomsResponse] = await Promise.all([
-      axios.get('http://localhost:8081/autogenetics/professors'),
-      axios.get('http://localhost:8081/autogenetics/courses'),
-      axios.get('http://localhost:8081/autogenetics/room')
+      axios.get('https://ccsched.onrender.com/autogenetics/professors'),
+      axios.get('https://ccsched.onrender.com/autogenetics/courses'),
+      axios.get('https://ccsched.onrender.com/autogenetics/room')
     ]);
 
     setProfessors(professorsResponse.data);
@@ -129,7 +129,7 @@ useEffect(() => {
     if (courses.length > 0) {
       const fetchBlocks = async () => {
         try {
-          const totalBlocksResponse = await axios.get(`http://localhost:8081/autogenetics/block/${courses[0].course_id}`);
+          const totalBlocksResponse = await axios.get(`https://ccsched.onrender.com/autogenetics/block/${courses[0].course_id}`);
           const totalBlocks = totalBlocksResponse.data[0].total_blocks;
           console.log('Total Blocks:', totalBlocks);
         } catch (error) {
@@ -143,7 +143,7 @@ useEffect(() => {
   //select all program, year and block for certain course
   const fetchAvailableBlocks = async (courseId) => {
     try {
-      const response = await axios.get(`http://localhost:8081/autogenetics/program-year-block/${courseId}`);
+      const response = await axios.get(`https://ccsched.onrender.com/autogenetics/program-year-block/${courseId}`);
       setAvailableBlocks(response.data);
 
     } catch (error) {
@@ -160,7 +160,7 @@ useEffect(() => {
   useEffect(() => {
     const fetchSpecialization = async (userId) => {
       try {
-        const response = await axios.get(`http://localhost:8081/autogenetics/courses/${userId}`);
+        const response = await axios.get(`https://ccsched.onrender.com/autogenetics/courses/${userId}`);
         setSpecialization(response.data);
       } catch (error) {
         console.error('Error fetching Specializations: ', error);
@@ -209,12 +209,12 @@ useEffect(() => {
   
           
           try {
-            const specializationResponse = await axios.get(`http://localhost:8081/autogenetics/courses/${randomProfessor.User_id}`);
+            const specializationResponse = await axios.get(`https://ccsched.onrender.com/autogenetics/courses/${randomProfessor.User_id}`);
             const specializations = specializationResponse.data;
   
             for (let k = 0; k < specializations.length; k++) {
               const randomSpecialization = specializations[k];
-              const response = await axios.get(`http://localhost:8081/autogenetics/program-year-block/${randomSpecialization.course_id}`);
+              const response = await axios.get(`https://ccsched.onrender.com/autogenetics/program-year-block/${randomSpecialization.course_id}`);
               const blocks = response.data;
   
               for (let l = 0; l < blocks.length; l++) {
@@ -319,8 +319,8 @@ useEffect(() => {
             const scheduleTable = document.getElementById(`schedule-table-${i}`);
 
             if (universityInfo) {
-                const universityLogoUrl = `http://localhost:8081/${universityInfo.universityLogo}`;
-                const departmentLogoUrl = `http://localhost:8081/${universityInfo.departmentLogo}`;
+                const universityLogoUrl = `https://ccsched.onrender.com/${universityInfo.universityLogo}`;
+                const departmentLogoUrl = `https://ccsched.onrender.com/${universityInfo.departmentLogo}`;
                 const schoolNameUppercase = universityInfo.schoolName.toUpperCase();
 
                 pdf.addImage(universityLogoUrl, 'JPEG', 20, 10, 25, 25);

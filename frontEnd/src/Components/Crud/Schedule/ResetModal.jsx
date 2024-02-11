@@ -10,7 +10,7 @@ function ResetModal() {
   const handleShow = () => setShow(true);
 
   const handleReset = () => {
-    axios.put('http://localhost:8081/summer_sched/reset') // Make API call to reset endpoint
+    axios.put('https://ccsched.onrender.com/summer_sched/reset') // Make API call to reset endpoint
       .then(response => {
         console.log(response.data); 
         handleClose(); 

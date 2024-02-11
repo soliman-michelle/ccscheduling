@@ -49,7 +49,7 @@ const ManualSched = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await axios.get('http://localhost:8081/manual/courses');
+                const response = await axios.get('https://ccsched.onrender.com/manual/courses');
                 setCourses(response.data);
             } catch (error) {
                 console.error('Error fetching courses: ', error);
@@ -61,7 +61,7 @@ const ManualSched = () => {
 
     const fetchSummer = async () => {
       try {
-          const response = await axios.get('http://localhost:8081/manual/display');
+          const response = await axios.get('https://ccsched.onrender.com/manual/display');
           setSummer(response.data);
       } catch (error) {
           console.error('Error fetching courses: ', error);
@@ -76,7 +76,7 @@ const ManualSched = () => {
         if (selectedCourseId) {
             const fetchProf = async () => {
                 try {
-                    const response = await axios.get(`http://localhost:8081/manual/professors/${selectedCourseId}`);
+                    const response = await axios.get(`https://ccsched.onrender.com/manual/professors/${selectedCourseId}`);
                     setProfessors(response.data);
                 } catch (error) {
                     console.error('Error fetching courses: ', error);
@@ -90,7 +90,7 @@ const ManualSched = () => {
     useEffect(() => {
         const fetchRooms = async () => {
             try {
-                const response = await axios.get('http://localhost:8081/manual/room');
+                const response = await axios.get('https://ccsched.onrender.com/manual/room');
                 setRooms(response.data);
             } catch (error) {
                 console.error('Error fetching professors: ', error);
@@ -102,7 +102,7 @@ const ManualSched = () => {
 
     const handleEditSummer = async (professor, courses, updatedSummerData) => {
       try {
-        const response = await axios.put(`http://localhost:8081/course/${professor}/${courses}/update`, updatedSummerData);
+        const response = await axios.put(`https://ccsched.onrender.com/course/${professor}/${courses}/update`, updatedSummerData);
         console.log('Response:', response.data); // Log the response
         fetchSummer(); // Refresh data after updating
       } catch (error) {
@@ -112,7 +112,7 @@ const ManualSched = () => {
 
     const handleDeleteSummer = async (id) => { // Corrected parameter name from blockId to summer_id
       try {
-        await axios.delete(`http://localhost:8081/manual/${id}/delete`); // Adjusted URL to match the backend route
+        await axios.delete(`https://ccsched.onrender.com/manual/${id}/delete`); // Adjusted URL to match the backend route
     
         setSummer((prevblock) => prevblock.filter((summer) => summer.id !== id));
 
@@ -135,12 +135,12 @@ const ManualSched = () => {
       };
     
       try {
-        const responseExistenceCheck = await axios.get(`http://localhost:8081/manual/check/${selectedProfId}/${selectedCourseId}`);
+        const responseExistenceCheck = await axios.get(`https://ccsched.onrender.com/manual/check/${selectedProfId}/${selectedCourseId}`);
         
         if (responseExistenceCheck.data.exists) {
           console.log("Summer class already exists:", responseExistenceCheck.data);
         } else {
-          const responseAddSummer = await axios.post('http://localhost:8081/manual/create', summer);
+          const responseAddSummer = await axios.post('https://ccsched.onrender.com/manual/create', summer);
           console.log("Summer class added:", responseAddSummer.data);
           closeModal();
           fetchSummer();

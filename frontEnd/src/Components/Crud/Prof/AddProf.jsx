@@ -46,7 +46,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await axios.get('http://localhost:8081/profs/roles');
+        const response = await axios.get('https://ccsched.onrender.com/profs/roles');
         setRoleData(response.data);
       } catch (error) {
         console.error(error);
@@ -57,7 +57,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
 
   const fetchAllSpecializations = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/specialization/courses');
+      const response = await axios.get('https://ccsched.onrender.com/specialization/courses');
       setSpecialization(response.data);
     } catch (error) {
       console.error(error);
@@ -80,7 +80,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
     setCourseFields([{ specialization: '', duration: '', slot: '' }]);
     
     try {
-      const response = await axios.get(`http://localhost:8081/profs/roles/${selectedRoleId}`);
+      const response = await axios.get(`https://ccsched.onrender.com/profs/roles/${selectedRoleId}`);
       const roleData = response.data;
       
       if (roleData.length > 0) { // Ensure that the response contains data
@@ -94,7 +94,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   
     if (selectedRoleId === "1") {
       try {
-        const response = await axios.get('http://localhost:8081/specialization/courses');
+        const response = await axios.get('https://ccsched.onrender.com/specialization/courses');
         const res = response.data;
         const filteredCourses = res.filter(course => course.duration <= 3);
         setSpecialization(filteredCourses);
@@ -134,7 +134,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
       setCourseDurations(newCourseDurations); // Update courseDurations state with the new duration
   
       try {
-        const response = await axios.get(`http://localhost:8081/specialization/block/${courseId}`);
+        const response = await axios.get(`https://ccsched.onrender.com/specialization/block/${courseId}`);
         const totalBlocks = response.data[0].available_blocks;
         console.log("Response Data:", response.data);
         console.log("totalBlocks: ", totalBlocks);
@@ -192,14 +192,14 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   
     try {
       // Send a POST request to the backend to check if the professor already exists
-      const response = await axios.get(`http://localhost:8081/profs/check/${fname}/${lname}`);
+      const response = await axios.get(`https://ccsched.onrender.com/profs/check/${fname}/${lname}`);
       if (response.data.exists) {
         setIsProfNameValid(false);
         return; // Exit function if professor already exists
       }
   
       // If professor doesn't exist, send a POST request to add the professor and associated courses
-      await axios.post("http://localhost:8081/profs/create", userData);
+      await axios.post("https://ccsched.onrender.com/profs/create", userData);
       handleAdd(userData); // Update UI with newly added professor
       setFname('');
       setMname('');
@@ -237,7 +237,7 @@ const handleAddCourse = async () => {
 
   if (role === "1") {
     try {
-      const response = await axios.get('http://localhost:8081/specialization/courses');
+      const response = await axios.get('https://ccsched.onrender.com/specialization/courses');
       const res = response.data;
       const filteredCourses = res.filter(course => course.duration <= 3);
       setSpecialization(filteredCourses);

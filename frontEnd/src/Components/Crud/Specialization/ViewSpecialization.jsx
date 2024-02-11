@@ -41,7 +41,7 @@ const ViewSpecialization = () => {
   
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/specialization");
+      const res = await axios.get("https://ccsched.onrender.com/specialization");
       console.log("Data received from the server:", res.data);
   
       if (Array.isArray(res.data)) {
@@ -61,7 +61,7 @@ const ViewSpecialization = () => {
 
   const fetchUnassignedCourses = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/specialization/unassigned-courses");
+      const res = await axios.get("https://ccsched.onrender.com/specialization/unassigned-courses");
       console.log("Unassigned Courses received from the server:", res.data);
 
       if (Array.isArray(res.data)) {
@@ -80,7 +80,7 @@ const ViewSpecialization = () => {
   }, []);
   const fetchAssignedCourses = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/specialization/assign");
+      const res = await axios.get("https://ccsched.onrender.com/specialization/assign");
 
       if (Array.isArray(res.data)) {
         setAssignedCourses(res.data);
@@ -93,7 +93,7 @@ const ViewSpecialization = () => {
   };
   const handleEditSpecialization = async (specializationId, updatedSpecializationData) => {
     try {
-      await axios.put(`http://localhost:8081/specialization/` +specializationId + '/update', updatedSpecializationData);
+      await axios.put(`https://ccsched.onrender.com/specialization/` +specializationId + '/update', updatedSpecializationData);
       fetchData(); // Refresh data after updating
     } catch (error) {
       console.error(error);
@@ -103,7 +103,7 @@ const ViewSpecialization = () => {
   const handleDeleteSpecialization = async (specializationId) => {
     try {
       console.log(`Deleting specialization with ID: ${specializationId}`);
-      await axios.delete(`http://localhost:8081/specialization/` + specializationId + `/delete`);
+      await axios.delete(`https://ccsched.onrender.com/specialization/` + specializationId + `/delete`);
       console.log(`Specialization with ID ${specializationId} deleted successfully`);
       setSpecialization((prevSpecialization) => prevSpecialization.filter((specializationItem) => specializationItem.id !== specializationId));
     } catch (error) {

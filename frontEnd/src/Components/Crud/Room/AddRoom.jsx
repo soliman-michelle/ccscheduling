@@ -66,14 +66,14 @@ const AddRoom = ({ show, handleClose, handleAdd }) => {
   
     try {
       // Check if the room already exists (after normalizing room names)
-      const response = await axios.get(`http://localhost:8081/rooms/check/${roomName}`);
+      const response = await axios.get(`https://ccsched.onrender.com/rooms/check/${roomName}`);
 
       if (response.data.exists) {
         // If room exists, show the alert
         setShowRoomExistsAlert(true);
       } else {
         // If room doesn't exist, proceed to create it
-        await axios.post('http://localhost:8081/rooms/create', newRoom);
+        await axios.post('https://ccsched.onrender.com/rooms/create', newRoom);
         handleAdd(newRoom);
         handleClose();
         setShowSuccessAlert(true);
