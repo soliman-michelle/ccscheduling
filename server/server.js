@@ -616,6 +616,7 @@ app.get('/userdata/:username', (req, res) => {
 
   app.get('/logout', (req, res) => {
     res.clearCookie('token');
+    console.log("LOGOUT");
     return res.json({Status: "Success"});
   })
 
