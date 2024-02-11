@@ -27,7 +27,7 @@ const app = express();
 const PORT = process.env.PORT || 3000
 app.use(express.json());
 const prodOrigins = [process.env.ORIGIN_1, process.env.ORIGIN_2]
-const devOrigin = ['https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app', 'http://localhost:8081', 'http://localhost:3000' ]
+const devOrigin = ['https://ccscheds.vercel.app','https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app', 'http://localhost:8081', 'http://localhost:3000' ]
 const allowedOrigins = process.env.NODE_ENV === 'ccsched' ? prodOrigins : devOrigin
 app.use(cors({
   origin: (origin, callback) => {
