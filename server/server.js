@@ -29,6 +29,7 @@ app.use(express.json());
 const prodOrigins = [process.env.ORIGIN_1, process.env.ORIGIN_2]
 const devOrigin = ['https://ccsched.onrender.com' ,'https://ccscheds.vercel.app','https://ccscheds-qqn2tok82-michelle-solimans-projects.vercel.app', 'http://localhost:8081', 'http://localhost:3000' ]
 const allowedOrigins = process.env.NODE_ENV === 'ccsched' ? prodOrigins : devOrigin
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -75,23 +76,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-app.post('/refresh', (req, res) => {
-  const refreshToken = req.cookies['refreshToken'];
-  if (!refreshToken) {
-    return res.status(401).send('Access Denied. No refresh token provided.');
-  }
-  
-  try {
-    const decoded = jwt.verify(refreshToken, secretKey);
-    const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
-  
-    res
-      .header('Authorization', accessToken)
-      .send(decoded.user);
-  } catch (error) {
-    return res.status(400).send('Invalid refresh token.');
-  }
-  });
+  app.post('/refresh', (req, res) => {
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) {
+      return res.status(401).send('Access Denied. No refresh token provided.');
+    }
+    
+    try {
+      const decoded = jwt.verify(refreshToken, secretKey);
+      const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
+    
+      res
+        .header('Authorization', accessToken)
+        .send(decoded.user);
+    } catch (error) {
+      return res.status(400).send('Invalid refresh token.');
+    }
+    });
 //update existing
 app.post('/university-info/createOrUpdate', upload.fields([
   { name: 'universityLogo', maxCount: 1 },
@@ -175,9 +176,6 @@ app.post('/university-info/createOrUpdate', upload.fields([
   });
 });
 
-
-
-
 // Function to send the reset password email
   const sendResetPasswordEmail = async (recipientEmail,  resetLink) => {
     try {
@@ -249,7 +247,7 @@ app.post('/university-info/createOrUpdate', upload.fields([
     }
   
     // Generate a reset link with the token
-    const resetLink = `http://localhost:3000/password-reset/${tokenResult.token}`;
+    const resetLink = `https://ccsched.onrender.com/password-reset/${tokenResult.token}`;
   
     // Send the reset password email
     await sendResetPasswordEmail(recipientEmail, resetLink);
@@ -420,7 +418,7 @@ app.post('/upload', upload.single('images'), (req, res) => {
 });
 
 app.get('/user', (req, res) => {
-    db.query("SELECT user_id, firstName, middleName, lastName, email, CONCAT('http://localhost:8081/', images) AS imageUrl, role FROM userdata", (err, data) => {
+    db.query("SELECT user_id, firstName, middleName, lastName, email, CONCAT('https://ccsched.onrender.com/', images) AS imageUrl, role FROM userdata", (err, data) => {
         if(err) {
             return res.json(err);
         }
@@ -477,8 +475,6 @@ app.get("/user/check/:email/:username/:firstName/:lastName", (req, res) => {
     }
   );
 });
-
-
 
 app.get('/user/roles', (req, res) => {
     db.query("SELECT * FROM role WHERE role_id IN (1, 2)", (err, data) => {
@@ -582,6 +578,7 @@ app.post('/userlogin', async (req, res) => {
                       const username = data[0].username;
                       const token = jwt.sign({username}, "jwt-secret-key", {expiresIn: '1d'});
                       res.cookie('token', token);
+                      console.log("login successfully");
                       return res.json({ Status: "Success" }); // Ensure the key is 'Status'
                   } else {
                       console.log("Incorrect password for user:", username);
