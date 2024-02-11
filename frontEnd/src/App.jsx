@@ -31,7 +31,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/user" element={<ViewAccount />} />
         <Route path="/forgot-password" element={<PasswordReset />} />
