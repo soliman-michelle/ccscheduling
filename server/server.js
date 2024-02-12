@@ -76,23 +76,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-  app.post('/refresh', (req, res) => {
-    const refreshToken = req.cookies['refreshToken'];
-    if (!refreshToken) {
-      return res.status(401).send('Access Denied. No refresh token provided.');
-    }
-    
-    try {
-      const decoded = jwt.verify(refreshToken, secretKey);
-      const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
-    
-      res
-        .header('Authorization', accessToken)
-        .send(decoded.user);
-    } catch (error) {
-      return res.status(400).send('Invalid refresh token.');
-    }
-    });
+  
 //update existing
 app.post('/university-info/createOrUpdate', upload.fields([
   { name: 'universityLogo', maxCount: 1 },
@@ -205,6 +189,8 @@ app.post('/university-info/createOrUpdate', upload.fields([
     return token;
   };
 
+  
+
   const storeTokenInDatabase = async (recipientEmail) => {
     try {
       const token = generateRandomToken(); // Generate a random token
@@ -297,6 +283,23 @@ app.post('/university-info/createOrUpdate', upload.fields([
     }
   });
 
+  app.post('/refresh', (req, res) => {
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) {
+      return res.status(401).send('Access Denied. No refresh token provided.');
+    }
+    
+    try {
+      const decoded = jwt.verify(refreshToken, secretKey);
+      const accessToken = jwt.sign({ user: decoded.user }, secretKey, { expiresIn: '1h' });
+    
+      res
+        .header('Authorization', accessToken)
+        .send(decoded.user);
+    } catch (error) {
+      return res.status(400).send('Invalid refresh token.');
+    }
+    });
   const verifyUser = (req, res, next) => {
     const token = req.cookies.token;
     if(!token) {
@@ -577,6 +580,7 @@ app.post('/userlogin', async (req, res) => {
                   if (match) {
                       const username = data[0].username;
                       const token = jwt.sign({username}, "jwt-secret-key", {expiresIn: '1d'});
+                      console.log("token: ", token);
                       res.cookie('token', token);
                       console.log("login successfully");
                       return res.json({ Status: "Success" }); // Ensure the key is 'Status'

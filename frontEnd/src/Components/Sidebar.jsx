@@ -36,7 +36,7 @@ const Sidebar = ({ isSidebarOpen }) => {
   useEffect(() => {
     const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     if (token) {
-      axios.get('https://ccsched.onrender.com/', { withCredentials: true })
+      axios.get('https://ccsched.onrender.com', { withCredentials: true })
         .then(response => {
           const username = response.data.username;
           // Fetch user's data including image URL by username
