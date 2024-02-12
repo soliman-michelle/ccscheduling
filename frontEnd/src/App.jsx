@@ -25,7 +25,6 @@ import Specialization from './Components/Crud/Specialization/Specialization';
 import Schedule from './Components/Crud/Schedule/Schedule';
 import AddSchedule from './Components/Crud/Schedule/AddSchedule';
 import ManualSched from "./Components/Crud/Schedule/ManualSched";
-// import SummerGenetic from "./Components/Crud/Schedule/SummerGenetic";
 
 function App() {
   return (
