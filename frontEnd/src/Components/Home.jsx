@@ -120,7 +120,7 @@ const Home = () => {
             }else{
                 console.log("not authenticated!!!!");
                 setAuth(false)
-                navigate('/login');
+                navigate('/');
             }
         }).then(err => console.log(err));
     }, [navigate])
