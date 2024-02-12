@@ -36,6 +36,7 @@ const PasswordReset = () => {
     height: "fit-content", // Set height to fit the content
     maxWidth: "750px", // Set maximum width for the card
     margin: "auto", // Center the card horizontally
+    marginTop: "calc(50vh - 150px)", // Center the card vertically
     "@media (max-width: 450px)": {
       height: "100%",
     },
@@ -53,8 +54,8 @@ const PasswordReset = () => {
   };
 
   return (
-    <body style={backgroundStyle}>
-    <div className="container mt-5" style={customStyles}>
+    <body className = "h-100"  style={backgroundStyle}>
+    <div className="container" style={customStyles}>
       <div className = "pass-card card d-flex m-3">
         <div className = "card-header text-white" style = {{backgroundColor: 'maroon'}}>
       <h2><strong>Password Reset</strong></h2>
