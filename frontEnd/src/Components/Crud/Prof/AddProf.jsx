@@ -119,14 +119,9 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   };
 
   const handleCourseChange = async (courseId) => {
-    // Check if the course is already selected
-    if (selectedCourses.includes(courseId)) {
-      // If already selected, remove it from the selected courses list
-      const updatedSelectedCourses = selectedCourses.filter(course => course !== courseId);
-      setSelectedCourses(updatedSelectedCourses);
-    }
   
     const selectedCourse = specialization.find(course => parseInt(course.course_id) === parseInt(courseId));
+    console.log("selectedCourse: ", selectedCourse);
     
     if (selectedCourse) {
       const newCourseDurations = { ...courseDurations };
@@ -201,6 +196,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
       // If professor doesn't exist, send a POST request to add the professor and associated courses
       await axios.post("https://ccsched.onrender.com/profs/create", userData);
       handleAdd(userData); // Update UI with newly added professor
+      handleClose();
       setFname('');
       setMname('');
       setLname('');
@@ -215,7 +211,6 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
       setCourseFields([]);
       setCourses([]);
       setCourseDurations({});
-      handleClose(); // Close the modal
     } catch (error) {
       console.error(error);
     }
@@ -380,81 +375,80 @@ const handleAddCourse = async () => {
             </div>
             {showCourseFields && (
   <div>
-    {courseFields.map((field, index) => (
-      <div key={index}>
-        <div className="row">
-          <div className="col-md-7">
-            <Form.Control 
-              as="select" 
-              value={field.specialization} 
-              onChange={(e) => {
-                const courseId = e.target.value;
-                handleCourseChange(courseId);
-                const newFields = [...courseFields];
-                newFields[index].specialization = courseId;
-                setCourseFields(newFields);
-              }} 
-              className='mt-2'
-            >
-              <option value="">Select Course</option>
-              {specialization
-                .filter(course => !selectedCourses.includes(course.course_id))
-                .map((course) => (
-                  <option key={course.course_id} value={course.course_id}>
-                    {course.course_code} {course.course_name}
-                  </option>
-              ))}
-            </Form.Control>
+        {courseFields.map((field, index) => (
+          <div key={index}>
+            <div className="row">
+              <div className="col-md-7">
+                <Form.Control 
+                  as="select" 
+                  value={field.specialization} 
+                  onChange={(e) => {
+                    const courseId = e.target.value;
+                    handleCourseChange(courseId);
+                    const newFields = [...courseFields];
+                    newFields[index].specialization = courseId;
+                    setCourseFields(newFields);
+                  }} 
+                  className='mt-2'
+                >
+                  <option value="">Select Course</option>
+                  {specialization
+                    .map((course) => (
+                      <option key={course.course_id} value={course.course_id}>
+                        {course.course_code} {course.course_name}
+                      </option>
+                  ))}
+                </Form.Control>
+              </div>
+              <div className="col-md-2">
+                <Form.Control
+                  type="number"
+                  placeholder="Duration"
+                  value={field.duration}
+                  className="mt-2"
+                  readOnly
+                />
+              </div>
+              <div className="col-md-2">
+                <Form.Control
+                  type="number"
+                  placeholder="Enter Block"
+                  value={field.slot}
+                  className='mt-2'
+                  onChange={(e) => {
+                    // Parse the entered value as an integer
+                    const enteredValue = parseInt(e.target.value);
+                    // Check if the entered value exceeds the maximum allowed value
+                    if (enteredValue > block) {
+                      // If the entered value is greater than the maximum allowed value,
+                      // set the input field value to the maximum allowed value
+                      const newFields = [...courseFields];
+                      newFields[index].slot = block.toString();
+                      setCourseFields(newFields);
+                    } else {
+                      // If the entered value is within the allowed range, update the state normally
+                      const newFields = [...courseFields];
+                      newFields[index].slot = e.target.value;
+                      setCourseFields(newFields);
+                    }
+                  }}
+                  required
+                  max={block}
+                />
+              </div>
+              <div className="col-md-1">
+                <FontAwesomeIcon
+                  icon={faTimes}
+                  style={{ color: 'red', marginLeft: '5px', cursor: 'pointer' }}
+                  className='mt-3'
+                  onClick={() => handleRemoveCourseField(index)} // Call the removal function with the index
+                />
+              </div>
+            </div>
           </div>
-          <div className="col-md-2">
-            <Form.Control
-              type="number"
-              placeholder="Duration"
-              value={field.duration}
-              className="mt-2"
-              readOnly
-            />
-          </div>
-          <div className="col-md-2">
-            <Form.Control
-              type="number"
-              placeholder="Enter Block"
-              value={field.slot}
-              className='mt-2'
-              onChange={(e) => {
-                // Parse the entered value as an integer
-                const enteredValue = parseInt(e.target.value);
-                // Check if the entered value exceeds the maximum allowed value
-                if (enteredValue > block) {
-                  // If the entered value is greater than the maximum allowed value,
-                  // set the input field value to the maximum allowed value
-                  const newFields = [...courseFields];
-                  newFields[index].slot = block.toString();
-                  setCourseFields(newFields);
-                } else {
-                  // If the entered value is within the allowed range, update the state normally
-                  const newFields = [...courseFields];
-                  newFields[index].slot = e.target.value;
-                  setCourseFields(newFields);
-                }
-              }}
-              required
-              max={block}
-            />
-          </div>
-          <div className="col-md-1">
-            <FontAwesomeIcon
-              icon={faTimes}
-              style={{ color: 'red', marginLeft: '5px', cursor: 'pointer' }}
-              className='mt-3'
-              onClick={() => handleRemoveCourseField(index)} // Call the removal function with the index
-            />
-          </div>
-        </div>
+        ))}
       </div>
-    ))}
-  </div>
-)}
+    )}
  <div className="row mt-4">
           <div className="col-md-12">
             <i>Note: The total number of blocks based on selected courses is {block}.</i>
