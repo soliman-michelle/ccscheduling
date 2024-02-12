@@ -106,16 +106,6 @@ const LogIn = () => {
                 {errors.password && <span className="text-danger">{errors.password}</span>}
               </div>
 
-              <div className="form-group">
-              <label htmlFor="semester" style={labelStyle}>Semester</label>
-              <select onChange={handleInput} className="form-control" name='semester'>
-                <option value="">Select Semester</option>
-                <option value="1st Semester">1st Semester</option>
-                <option value="2nd Semester">2nd Semester</option>
-              </select>
-              {errors.semester && <span className="text-danger">{errors.semester}</span>}
-            </div>
-
               <div className='text-center mt-3'>
                 <button type="submit" className="btn btn-danger btn-block mt-2">Login</button>
               </div>

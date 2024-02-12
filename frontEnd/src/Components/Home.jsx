@@ -112,7 +112,7 @@ const Home = () => {
         fetchDatas();
     }, []);
     useEffect(() => {
-        axios.get('https://ccsched.onrender.com')
+        axios.get('https://ccsched.onrender.com/')
         .then(res => {
             if(res.data.Status === 'Success' ){
                 console.log("Auth!!!1");
