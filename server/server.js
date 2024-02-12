@@ -906,6 +906,38 @@ return res.json(data);
 });
 });
 
+app.get("/specialization/block/:courseId", async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    const sql = `
+    SELECT 
+        pcm.course_id,
+        SUM(pcm.blocks) AS total_blocks_pcm,
+        COALESCE((SELECT SUM(assign_block) FROM monitor_class WHERE course_id = ?), 0) AS total_assign_blocks,
+        SUM(pcm.blocks) - COALESCE((SELECT SUM(assign_block) FROM monitor_class WHERE course_id = ?), 0) AS available_blocks
+    FROM 
+        program_course_mapping pcm
+    LEFT JOIN 
+        monitor_class mc ON pcm.course_id = mc.course_id
+    WHERE
+        pcm.course_id = ?
+    GROUP BY
+        pcm.course_id;
+    `;
+    db.query(sql, [courseId, courseId, courseId], (err, results) => {
+      if (err) {
+        console.error("Error executing MySQL query: ", err);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error("Error in route handler: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 app.get('/specialization/courses', (req, res) => {
 const userRole = req.query.userRole;
 
