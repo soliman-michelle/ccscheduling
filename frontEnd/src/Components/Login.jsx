@@ -15,7 +15,7 @@ const LogIn = () => {
 
   useEffect(() => {
     const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-  
+    console.log("Token frontend: " , token);
     if (token) {
       navigate('/'); 
     }
