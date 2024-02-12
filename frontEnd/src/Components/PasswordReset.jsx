@@ -54,25 +54,27 @@ const PasswordReset = () => {
   };
 
   return (
+    <body style={backgroundStyle}>
     <div className="container mt-5" style={customStyles}>
-    <div className = "pass-card card d-flex m-3">
-      <div className = "card-header text-white" style = {{backgroundColor: 'maroon'}}>
-    <h2><strong>Password Reset</strong></h2>
-    </div>
-    <div className = "card-body">
-    <form onSubmit={handleSubmit}>
-      <div className="mb-3">
-        <label htmlFor="email" className="form-label">Email address</label>
-        <input type="email" className="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" />
-        <div id="emailHelp" className="form-text">We never share your email with anyone else.</div>
+      <div className = "pass-card card d-flex m-3">
+        <div className = "card-header text-white" style = {{backgroundColor: 'maroon'}}>
+      <h2><strong>Password Reset</strong></h2>
       </div>
-      {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-      {successMessage && <div className="alert alert-success">{successMessage}</div>}
-      <button type="submit" className="btn btn-primary">Submit</button>
-    </form>
-  </div>
-  </div>
-  </div>
+      <div className = "card-body">
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">Email address</label>
+          <input type="email" className="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email" />
+          <div id="emailHelp" className="form-text">We never share your email with anyone else.</div>
+        </div>
+        {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+        {successMessage && <div className="alert alert-success">{successMessage}</div>}
+        <button type="submit" className="btn btn-primary">Submit</button>
+      </form>
+    </div>
+    </div>
+    </div>
+    </body>
   );
 };
 
