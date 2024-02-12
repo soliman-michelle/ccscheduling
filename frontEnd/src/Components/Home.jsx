@@ -21,6 +21,7 @@ const Home = () => {
       const customCardStyle = {
         height: '250px', // Use single quotes for '70px'
         textAlign: 'center',
+        boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
       };
     
     axios.defaults.withCredentials = true;
@@ -112,13 +113,11 @@ const Home = () => {
         fetchDatas();
     }, []);
     useEffect(() => {
-        axios.get('https://ccsched.onrender.com/')
+        axios.get('https://ccsched.onrender.com')
         .then(res => {
             if(res.data.Status === 'Success' ){
-                console.log("Auth!!!1");
                 setAuth(true)
             }else{
-                console.log("not authenticated!!!!");
                 setAuth(false)
                 navigate('/login');
             }
@@ -128,11 +127,26 @@ const Home = () => {
     
   return (
     <div>
-        {auth ?
-               <div className="h-100">
+
+<style>
+        {`
+
+@media (min-width: 768px) {
+  .main{
+    width:100%;
+  }
+}
+`}
+
+</style>
+{auth ?
+    <div className="h-100">
       <div className="wrapper">
-          <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-          <Sidebar isSidebarOpen={isSidebarOpen} />
+      <Sidebar isSidebarOpen={isSidebarOpen} />
+      <div className = "main">
+      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/>
+
+          
            <div className="main-panel">
             <div className="content">
               <div className="page-inner">
@@ -142,73 +156,84 @@ const Home = () => {
               <button type="button" className="btn-close" onClick={() => setShowWelcome(false)} aria-label="Close"></button>
             </div>
           )}
-            <div className="container mt-3">
+
+
+<div className = "home section pt-2">
+<div className="container">
             <div className="row">
-                <div className="col-md-3">
-                  <div className="card" style={customCardStyle}>
-                    <div className="card-body text-danger">
-                    Classes
+                <div className = "card card-body m-2 p-5 mt-3 mb-5 text-center text-danger" style = {{backgroundImage: "url('/home.png')", backgroundSize: 'cover', boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)'}}>
+            <h3><b><i>WELCOME TO CCS SCHEDULING MANAGEMENT SYSTEM</i></b></h3>
+            </div>
+                <div className="custom-card col-md-3 mb-3">
+                  <div className="card " style={customCardStyle}>
+                    <div className="card-body text-danger" style = {{backgroundImage: "url('/design.png')", backgroundSize: 'cover'}}>
+                    <h5><b>Classes</b></h5>
                     <hr></hr>
                     <h1>{classCount}</h1>
                     <p>
                     <a href="/specialization" className="card-link text-danger">
-                        List of Classes
+                        <u>List of Classes</u>
                     </a>
                     </p>
                     </div>
                 </div>
                 </div>
-                <div className="col-md-3">
+
+            <div className="custom-card col-md-3 mb-3">
                 <div className="card" style={customCardStyle}>
-                    <div className="card-body text-danger">
-                    # Professors
+                    <div className="card-body text-danger" style = {{backgroundImage: "url('/design.png')", backgroundSize: 'cover'}}>
+                    <h5><b>Professors</b></h5>
                     <hr></hr>
                     <h1>{prof}</h1>
                     <p>
                     <a href="/prof" className="card-link text-danger">
-                        List of Professors
+                        <u>List of Professors</u>
                     </a>
                     </p>
 
                     </div>
                 </div>
                 </div>
-                <div className="col-md-3">
+                <div className="custom-card col-md-3 mb-3">
                 <div className="card" style={customCardStyle}>
-                    <div className="card-body text-danger">
-                    # Blocks
+                    <div className="card-body text-danger" style = {{backgroundImage: "url('/design.png')", backgroundSize: 'cover'}}>
+                    <h5><b>Blocks</b></h5>
                     <hr></hr>
                     <h1>{blockCount}</h1>
                     <p>
                     <a href="/block" className="card-link text-danger">
-                        List of Blocks
+                    <u>List of Blocks</u>
                     </a>
                     </p>
                     </div>
                 </div>
                 </div>
-                <div className="col-md-3">
+                <div className="custom-card col-md-3 mb-3">
                 <div className="card" style={customCardStyle}>
-                    <div className="card-body text-danger">
-                    # Available Rooms
+                    <div className="card-body text-danger" style = {{backgroundImage: "url('/design.png')", backgroundSize: 'cover'}}>
+                    <h5><b>Available Rooms</b></h5>
                     <hr></hr>
                     <h1>{roomCount}</h1>
                     <p>
                     <a href="/viewroom" className="card-link text-danger">
-                        List of Rooms
+                        <u>List of Rooms</u>
                     </a>
                     </p>
                     </div>
                 </div>
                 </div>
-            </div>
-      
-            </div>
+                </div>
+                </div>
+</div>
+
+
+
+
               </div>
             </div>
            </div>
       </div>
-      
+      </div>
     </div>
         : <div>
             

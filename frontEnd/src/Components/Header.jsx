@@ -13,7 +13,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
   useEffect(() => {
     const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     if (token) {
-      axios.get('https://ccsched.onrender.com', { withCredentials: true })
+      axios.get('https://ccsched.onrender.com/', { withCredentials: true })
         .then(response => {
           const username = response.data.username;
           // Fetch user's data including image URL by username
@@ -62,48 +62,50 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
     isSidebarOpen: PropTypes.bool.isRequired, 
   };
   return (
-    <div className="main-header " style={{ backgroundColor: 'maroon'}}>
-  <div className='d-flex justify-content-between align-items-center'>
-  <div className="logo-header d-flex align-items-center" style={{ marginLeft: '30px' }}>
-  {isSidebarOpen && (
-    <a href="/" className="navbar-brand d-flex align-items-center">
-      <img src={Image} width="40" alt="navbar brand" className="navbar-brand" />
-      <b className="text-light h2 align-middle mx-2">CCSched</b>
-    </a>
-  )}
-  <button className='navbar-toggler' onClick={toggleSidebar} style={{ marginLeft: '10px' }}>
+    <div className="main-header" style={{ backgroundColor: 'maroon'}}>
+  <div className= "container-fluid">
+  <nav className="navbar navbar-expand">
+  <div className="logo-header d-flex align-items-center">
+  <button className = "btn" id="sidebar-toggle" type = "button" onClick={toggleSidebar} style={{ transition: 'transform 0.3s ease' }}>
     {isSidebarOpen ? (
-      <FaBars style={{ color: 'white', width: '40px', height: '30px ' }} />
-    ) : (
-      <FaEllipsisV style={{ color: 'white', width: '40px', height: '30px ' }} />
-    )}
-  </button>
+              <FaBars className = "nav-btn" style={{ color: 'white', width: '40px', height: '30px' }} />
+            ) : (
+              <FaEllipsisV className = "nav-btn nav-close-btn" style={{ color: 'white', width: '40px', height: '30px' }} />
+            )}
+
+            </button>
 </div>
 
    
-  <div className='navbar-expand-lg ml-auto'>
-  <nav className='navbar navbar-header navbar-expand-lg'>
-      <div className='container-fluid'>
-        <ul className='navbar-nav topbar-nav ml-md-auto align-items-center'>
-        <li>
-    <Dropdown show={isDropdownOpen} onToggle={toggleDropdown}>
-     <Dropdown.Toggle id="dropdown-basic" className="custom-dropdown-toggle" style={{border: 'none'}}>
-     {Array.isArray(userData) && userData.map((user) => (
-          <div key={user.user_id}>
-            <img src={`https://ccsched.onrender.com/${user.images}`} alt="Profile" style={{width: '50px'}} />
-            <span>{user.firstName} {user.lastName} | {user.role}</span>
-          </div>
-        ))}
-      </Dropdown.Toggle>
-      <Dropdown.Menu>
-          <Dropdown.Item onClick={() => setShowLogoutModal(true)}>Log out</Dropdown.Item>
-        </Dropdown.Menu>
-    </Dropdown>
+<div className="container d-flex">
+<ul className="navbar-nav topbar-nav ml-md-auto align-items-center">
+            <li>
+            <Dropdown show={isDropdownOpen} onToggle={toggleDropdown}>
+                <Dropdown.Toggle id="dropdown-basic" className="custom-dropdown-toggle" style={{ border: 'none' }}>
+                  {userData && userData.map((user) => (
+                    <div key={user.user_id} className="d-flex align-items-center custom-head">
+                      <img
+                        src={`https://ccsched.onrender.com/${user.images}`}
+                        alt="Profile"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                      <span className = "name-user" style = {{fontSize: '15px', marginLeft: "10px"}}>{user.firstName} {user.lastName} | {user.role}</span>
+                    </div>
+                  ))}
+                </Dropdown.Toggle>
+                <Dropdown.Menu style={{ marginLeft: '100px' }}>
+                  <Dropdown.Item onClick={() => setShowLogoutModal(true)}>Log out</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
   </li>
         </ul>
       </div>
   </nav>
-  </div>
 
   </div>
  {/* Logout confirmation modal */}
