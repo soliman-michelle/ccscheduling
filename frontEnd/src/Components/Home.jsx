@@ -85,7 +85,7 @@ const Home = () => {
         const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     
         if (!token) {
-          navigate('/login'); // Redirect to login if no token found
+          navigate('/'); // Redirect to login if no token found
         }
       }, [navigate]);
     const fetchClassesCount = async () => {
