@@ -85,7 +85,7 @@ const Home = () => {
         const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     
         if (!token) {
-          navigate('/'); // Redirect to login if no token found
+          navigate('/login'); // Redirect to login if no token found
         }
       }, [navigate]);
     const fetchClassesCount = async () => {
@@ -120,7 +120,7 @@ const Home = () => {
             }else{
                 console.log("not authenticated!!!!");
                 setAuth(false)
-                navigate('/');
+                navigate('/login');
             }
         }).then(err => console.log(err));
     }, [navigate])

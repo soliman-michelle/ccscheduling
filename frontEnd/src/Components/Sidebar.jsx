@@ -94,12 +94,12 @@ const Sidebar = ({ isSidebarOpen }) => {
 
                   {/* Sidebar Links */}
                   <ul className="nav flex-column mt-4">
-                    <li className="nav-item">
+                    {/* <li className="nav-item">
                       <a className="nav-link" href="/" style={linkStyle}>
                         <FaHome style={icons} />
                         <span style={textDisplayStyle}>Home</span>
                       </a>
-                    </li>
+                    </li> */}
                     <li className="nav-item">
                       <a className="nav-link" href="/schedule/" style={linkStyle}>
                         <FaCalendar style={icons} />
