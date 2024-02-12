@@ -115,8 +115,10 @@ const Home = () => {
         axios.get('https://ccsched.onrender.com')
         .then(res => {
             if(res.data.Status === 'Success' ){
+                console.log("Auth!!!1");
                 setAuth(true)
             }else{
+                console.log("not authenticated!!!!");
                 setAuth(false)
                 navigate('/login');
             }
