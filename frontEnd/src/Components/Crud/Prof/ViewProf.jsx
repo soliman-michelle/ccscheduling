@@ -45,7 +45,7 @@ const ViewProf = () => {
 
   const fetchDataAndRoles = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/profs");
+      const res = await axios.get("https://ccsched.onrender.com/profs");
       setUser(res.data);
 
       const updatedUser = await Promise.all(
