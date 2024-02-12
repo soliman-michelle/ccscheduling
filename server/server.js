@@ -692,18 +692,18 @@ app.get('/userdata/:username', (req, res) => {
   });        
 
 // Check if a room exists with the given name (after removing spaces and special characters)
-app.get("/rooms/check/:start/:end/:sem", (req, res) => {
-const startYear = req.params.start;
-const endYear = req.params.end;
-const semester = req.params.sem;
+app.get("/rooms/check/:roomName", (req, res) => {
+  const originalRoomName = req.params.roomName;
+  const normalizedRoomName = originalRoomName.replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters
+  const normalizedRoomNameWithoutSpaces = normalizedRoomName.replace(/\s+/g, ''); // Remove spaces
 
-db.query("SELECT * FROM academic_year WHERE start = ? AND end = ? AND sem = ?", [startYear, endYear, semester], (err, data) => {
-  if (err) {
-    console.error(err);
-    return res.status(500).json(err);
-  }
-  return res.json({ exists: data.length > 0 });
-});
+  db.query("SELECT * FROM room WHERE REPLACE(roomName, ' ', '') = ?", [normalizedRoomNameWithoutSpaces], (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    }
+    return res.json({ exists: data.length > 0 });
+  });
 });
 
 
