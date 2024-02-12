@@ -32,7 +32,7 @@ const SummerGenetic = () => {
 
     const fetchCurrentAcademicYear = async () => {
       try {
-        const response = await axios.get('http://localhost:8081/summer_sched/curriculum');
+        const response = await axios.get('https://ccsched.onrender.com/summer_sched/curriculum');
         const { start, end, sem } = response.data[0];
         setCurrentYear(`${sem === 1 ? '1st' : '2nd'} Semester A.Y. ${start}-${end}`);
       } catch (error) {
@@ -54,9 +54,9 @@ const SummerGenetic = () => {
       const fetchData = async () => {
         try {
           const [summerResponse, roomResponse, universityInfoResponse] = await Promise.all([
-            axios.get('http://localhost:8081/summer_sched/data'),
-            axios.get('http://localhost:8081/summer_sched/room'),
-            axios.get('http://localhost:8081/university-info')
+            axios.get('https://ccsched.onrender.com/summer_sched/data'),
+            axios.get('https://ccsched.onrender.com/summer_sched/room'),
+            axios.get('https://ccsched.onrender.com/university-info')
           ]);
     
           const summerData = summerResponse.data;
@@ -87,7 +87,7 @@ const SummerGenetic = () => {
     useEffect(() => {
       const fetchAcademicYears = async () => {
         try {
-          const response = await axios.get('http://localhost:8081/summer_sched/archive');
+          const response = await axios.get('https://ccsched.onrender.com/summer_sched/archive');
           setAcademicYears(response.data); // Assuming response.data is an array of academic years
           setSemester(response.data); // Assuming response.data is an array of academic years
         } catch (error) {
@@ -141,7 +141,7 @@ const SummerGenetic = () => {
 
     const generateRandomSchedule = async () => {
       try {
-          const response = await axios.get('http://localhost:8081/summer_sched/room');
+          const response = await axios.get('https://ccsched.onrender.com/summer_sched/room');
           const roomData = response.data;
   
           let scheduleTime = [];
@@ -518,7 +518,10 @@ const renderTableBody = (professor) => {
                     <p>{classItem.course_code} - {classItem.course_name}</p>
                     <p>{classItem.startTime} - {classItem.endTime}</p>
                     <p>{classItem.room.roomName || "N/A"}</p>
+                    <p>{classItem.day}</p>
                     <p>{classItem.block}</p>
+                    <p>{classItem.prof}</p>
+
                   </div>
                 ))}
             </td>
@@ -551,7 +554,7 @@ const handleSavePDF = async () => {
                   };
   
                   console.log("PAY: ", payload);
-                  const response = await axios.put(`http://localhost:8081/summer_sched/${classId}/update`, payload);
+                  const response = await axios.put(`https://ccsched.onrender.com/summer_sched/${classId}/update`, payload);
                   console.log('Update response:', response.data);
                   break; // Once found, exit the loop to avoid unnecessary iterations
               }
@@ -568,8 +571,8 @@ const handleSavePDF = async () => {
           const scheduleTable = document.getElementById(`schedule-table-${i}`);
 
           if (universityInfo) {
-              const universityLogoUrl = `http://localhost:8081/${universityInfo.universityLogo}`;
-              const departmentLogoUrl = `http://localhost:8081/${universityInfo.departmentLogo}`;
+              const universityLogoUrl = `https://ccsched.onrender.com/${universityInfo.universityLogo}`;
+              const departmentLogoUrl = `https://ccsched.onrender.com/${universityInfo.departmentLogo}`;
               const schoolNameUppercase = universityInfo.schoolName.toUpperCase();
 
               pdf.addImage(universityLogoUrl, 'JPEG', 20, 10, 25, 25);
@@ -645,15 +648,27 @@ return (
             ))}
           </select>
           </div>
+          <div className="col-md-3">
+          {/* <ResetModal/> */}
+          {/* <Dropdown show={isFilterDropdownOpen} onToggle={toggleFilterDropdown}>
+        <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle float-right mt-2">
+          <span style={{ color: 'black' }}>{selectedFilter} <FaCaretDown /></span>
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          <Dropdown.Item onClick={() => handleFilter('Professor')}>Professor</Dropdown.Item>
+          <Dropdown.Item onClick={() => handleFilter('Room')}>Room</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown> */}
+          </div>
       </div>
       <div className="card card-body mb-3 animated fadeInUp">
       <button
       type="button"
       className="btn btn-primary"
       onClick={handleGenerateSummerClasses}
-      disabled={isGenerating} 
+      disabled={isGenerating} // Disable the button when classes are being generated
   >
-      {isGenerating ? "Generating..." : "Generate Classes"} 
+      {isGenerating ? "Generating..." : "Generate Classes"} {/* Change button text based on generation state */}
   </button>
 </div>
     {professorsSchedule.map((professor, professorIndex) => (
