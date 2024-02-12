@@ -36,7 +36,6 @@ const PasswordReset = () => {
     height: "fit-content", // Set height to fit the content
     maxWidth: "750px", // Set maximum width for the card
     margin: "auto", // Center the card horizontally
-    marginTop: "calc(50vh - 150px)", // Center the card vertically
     "@media (max-width: 450px)": {
       height: "100%",
     },
