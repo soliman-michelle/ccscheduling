@@ -20,13 +20,15 @@ const Schedule = () => {
 
   return (
     <div className="h-100">
-      <div className="class-wrapper">
-        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+    <div className="wrapper">
+    <Sidebar isSidebarOpen={isSidebarOpen} />
+      <div className = "main">
+    <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+
 
         <div className='container-fluid'>
           <div className="row">
-            <div className="col-md-2">
-              <Sidebar isSidebarOpen={isSidebarOpen} />
+            <div className="col-md-1">
             </div>
             <div className="col-md-10 mt-5">
               <ul className="nav nav-tabs mb-4">
@@ -62,6 +64,7 @@ const Schedule = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

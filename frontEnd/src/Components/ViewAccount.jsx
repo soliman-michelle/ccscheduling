@@ -4,6 +4,7 @@ import axios from "axios";
 import AddAccount from "./AddAccount";
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { color } from "html2canvas/dist/types/css/types/color";
 
 const ViewAccount = () => {
     const [user, setUser] = useState([]);
@@ -148,7 +149,7 @@ const ViewAccount = () => {
 
         <div className = "content">
       <div className = "card">
-        <h1>ACCOUNTS</h1>
+        <h1 style={color='black'}>ACCOUNTS</h1>
       </div>
       </div>
 
