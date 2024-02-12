@@ -160,7 +160,19 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
 
   return (
     <div>
-      <Button variant="primary" onClick={handleClose}>
+                  <style> {`
+        .small-btn {
+        @media (min-width: 320px) {
+        font-size: 12px;
+      }
+      @media (min-width: 1024px){
+        font-size: 15px;
+      }
+    }
+      `}
+
+      </style>
+      <Button variant="primary" onClick={handleClose} className = "small-btn">
       <FontAwesomeIcon icon={faPlus} /> Add User
       </Button>
       <Modal show={show} onHide={handleClose} size="xl">
@@ -345,4 +357,3 @@ AddAccount.propTypes = {
   handleAdd: PropTypes.func.isRequired,
 };
 export default AddAccount;
-
