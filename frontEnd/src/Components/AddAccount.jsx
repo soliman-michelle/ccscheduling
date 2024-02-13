@@ -103,12 +103,12 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
   
     try {
       // Check if the user already exists
-      const response = await axios.get(`http://localhost:8081/user/check/${email}/${username}/${firstName}/${lastName}`);
+      const response = await axios.get(`https://ccsched.onrender.com/user/check/${email}/${username}/${firstName}/${lastName}`);
 
       if (response.data.exists) {
         setShowUserExistsAlert(true);
       } else {
-      const response = await axios.post('http://localhost:8081/user/create', formData, {
+      const response = await axios.post('https://ccsched.onrender.com/user/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -131,7 +131,7 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
   
   useEffect(() => {
     // Fetch role data from the server
-    axios.get('http://localhost:8081/user/roles')
+    axios.get('https://ccsched.onrender.com/user/roles')
       .then((response) => {
         setRoleData(response.data);
       })
