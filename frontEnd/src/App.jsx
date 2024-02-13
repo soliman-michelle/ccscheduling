@@ -41,17 +41,14 @@ function App() {
           path="/university-info/"
           element={<UniversityInfo/>}
         />      
-        {/* CRUD block */}
         <Route path='/block/*' element={<Block />} />
 
-        {/* CRUD room */}
         <Route path='/room/add/*' element={<AddRoom />} />
         <Route path='/room/edit/:id/*' element={<EditRoom />} />
         <Route path='/room/:id/delete/*' element={<DeleteRoom />} />
         <Route path='/viewroom' element={<Room />} />
 
         <Route path='/accordion/*' element={<AccordionDropdown />} />
-        {/* CRUD Course */}
         <Route exact path='/course/*' element={<Course/>} />
         <Route path="/coursefilter" element={<CourseFilter />} />
         <Route path='/course/add/*' element={<AddCourse/>} />
