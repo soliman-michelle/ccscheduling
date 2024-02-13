@@ -57,7 +57,7 @@ const handleEditError = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://localhost:8081/rooms");
+      const res = await axios.get("https://ccsched.onrender.com/rooms");
       setRoom(res.data);
     } catch (err) {
       console.error(err);
@@ -70,7 +70,7 @@ const handleEditError = () => {
 
   const handleEditRoom = async (roomId, updatedRoomData) => {
     try {
-      await axios.put(`http://localhost:8081/rooms/${roomId}/update`, updatedRoomData);
+      await axios.put(`https://ccsched.onrender.com/rooms/${roomId}/update`, updatedRoomData);
       fetchData(); // Refresh data after updating
       handleEditSuccess(); // Show success alert
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -82,7 +82,7 @@ const handleEditError = () => {
 
   const handleDeleteRoom = async (roomId) => {
     try {
-      await axios.delete(`http://localhost:8081/rooms/${roomId}/delete`);
+      await axios.delete(`https://ccsched.onrender.com/rooms/${roomId}/delete`);
   
       // Clear the selectedRoom if it's the room being deleted
       if (selectedRoom && selectedRoom.id === roomId) {
