@@ -71,8 +71,8 @@ const handleEditError = () => {
   const handleEditRoom = async (roomId, updatedRoomData) => {
     try {
       await axios.put(`https://ccsched.onrender.com/rooms/${roomId}/update`, updatedRoomData);
-      fetchData(); // Refresh data after updating
-      handleEditSuccess(); // Show success alert
+      fetchData(); 
+      handleEditSuccess(); 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error(error);
