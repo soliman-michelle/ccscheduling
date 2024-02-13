@@ -14,9 +14,9 @@ const CourseFilter = () => {
 
   const courseMap = {
     'BSCS': { course: 'Bachelor of Science in Computer Science', specialization: null },
-    'BSCS-DS': { course: 'Bachelor of Science in Computer Science', specialization: 'Specialization: Data Science' },
-    'BSIT-SD': { course: 'Bachelor of Science in Information Technology', specialization: 'Specialization: System Development' },
-    'BSIT-BA': { course: 'Bachelor of Science in Information Technology', specialization: 'Specialization: Business Analytics' },
+    'BSCS-DS': { course: 'Bachelor of Science in Computer Science', specialization: 'Data Science' },
+    'BSIT-SD': { course: 'Bachelor of Science in Information Technology', specialization: 'System Development' },
+    'BSIT-BA': { course: 'Bachelor of Science in Information Technology', specialization: 'Business Analytics' },
   };
 
   const { course, specialization } = courseMap[selectedProgram] || {};
@@ -26,7 +26,7 @@ const CourseFilter = () => {
   useEffect(() => {
     const fetchCourseDetails = async () => {
       try {
-        const response = await axios.get(`https://ccsched.onrender.com/course?program=${selectedProgram}`);
+        const response = await axios.get(`http://localhost:8081/course?program=${selectedProgram}`);
         console.log("Courses: ", response.data);
         setCourseDetails(response.data);
       } catch (error) {
@@ -51,14 +51,16 @@ const CourseFilter = () => {
   
     return (
       <div className="container">
+        <div className = "custom-filter">
         {Object.keys(coursesByYear).map((year) => (
           <div className="row text-center" key={year}>
-            <h6 className="text-center" style={{ border: '2px solid #000' }}>{`${yearToOrdinal(parseInt(year, 10))} Year`}</h6>
-            <div className="col-md-12" style={{ border: '2px solid #000' }}>
+            <h6 className="row-filter text-center" style={{ border: '1px solid #000' }}><strong>{`${yearToOrdinal(parseInt(year, 10))} Year`}</strong></h6>
+            <div className="row-filter col-md-12" style={{ border: '1px solid #000' }}>
               {renderYearSemesters(coursesByYear[year])}
             </div>
           </div>
         ))}
+      </div>
       </div>
     );
   };
@@ -66,12 +68,12 @@ const CourseFilter = () => {
   const renderYearSemesters = (courses) => (
     <React.Fragment>
       <div className="row text-center">
-        <div className="col-md-6" style={{ border: '2px solid #000' }}>
-          <h6>First Semester</h6>
+        <div className="row-filter col-md-6" style={{ border: '1px solid #000' }}>
+          <h6 className="row-filter"><strong>First Semester</strong></h6>
           {renderYearSemCourses(courses, 1)}
         </div>
-        <div className="col-md-6" style={{ border: '2px solid #000' }}>
-          <h6>Second Semester</h6>
+        <div className="col-md-6" style={{ border: '1px solid #000' }}>
+          <h6 className="row-filter"><strong>Second Semester</strong></h6>
           {renderYearSemCourses(courses, 2)}
         </div>
       </div>
@@ -81,19 +83,19 @@ const CourseFilter = () => {
   const renderYearSemCourses = (courses, sem) => (
     <React.Fragment>
       <div className="row text-center">
-        <div className="col-md-2" style={{ border: '2px solid #000' }}>
+        <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
           <strong>Course Code</strong>
         </div>
-        <div className="col-md-4" style={{ border: '2px solid #000' }}>
+        <div className="srow-filter col-md-4" style={{ border: '1px solid #000' }}>
           <strong>Description</strong>
         </div>
-        <div className="col-md-2" style={{ border: '2px solid #000' }}>
-          <strong>Online  FTF</strong>
+        <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
+          <strong>Online / FTF</strong>
         </div>
-        <div className="col-md-2" style={{ border: '2px solid #000' }}>
+        <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
           <strong>Lab</strong>
         </div>
-        <div className="col-md-2" style={{ border: '2px solid #000' }}>
+        <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
           <strong>Units</strong>
         </div>
       </div>
@@ -101,19 +103,19 @@ const CourseFilter = () => {
         .filter((course) => course.sem === sem)
         .map((course) => (
           <div className="row text-center" key={course.course_code}>
-            <div className="col-md-2" style={{ border: '2px solid #000' }}>
+            <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
               {course.course_code}
             </div>
-            <div className="col-md-4" style={{ border: '2px solid #000' }}>
+            <div className="srow-filter col-md-4" style={{ border: '1px solid #000' }}>
               {course.course_name}
             </div>
-            <div className="col-md-2" style={{ border: '2px solid #000' }}>
+            <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
               {course.online + course.ftf}
             </div>
-            <div className="col-md-2" style={{ border: '2px solid #000' }}>
+            <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
               {course.lab}
             </div>
-            <div className="col-md-2" style={{ border: '2px solid #000' }}>
+            <div className="srow-filter col-md-2" style={{ border: '1px solid #000' }}>
               {course.units}
             </div>
           </div>
@@ -127,36 +129,35 @@ const CourseFilter = () => {
 
   return (
     <div className="h-100">
-      <div className="class-wrapper">
-        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-md-2">
-              <Sidebar isSidebarOpen={isSidebarOpen} />
-            </div>
-           <div className="col-md-10 mt-5">
-              <div className="text-center">
-                <h4>LAGUNA UNIVERSITY</h4>
+      <div className="wrapper">
+      <Sidebar isSidebarOpen={isSidebarOpen} />
+      <div className = "main">
+      <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/>
+
+      <div className = "container d-flex p-5">
+           <div className="col-md-12 flex-column">
+              <div className=" container-fluid custom-filhead text-center">
+                <h4><strong>LAGUNA UNIVERSITY</strong></h4>
                 <p>Laguna Sports Complex, Brgy. Bubukal, Santa Cruz, Laguna</p>
                 <h6>Tel. No. (049) 576-4359</h6>
-                <h5>PROGRAM OF STUDY</h5>
-                <h5>{course}</h5>
+                <br></br>
+                <h5><strong>PROGRAM OF STUDY</strong></h5>
+                <h5><strong>{course}</strong></h5>
                 {selectedProgram === 'BSCS' ? null : (
-                  <h6>
+                  <h6><strong>
                     <i>Specialization: {specialization}</i>
-                  </h6>
+                    </strong></h6>
                 )}
-                <h6>Effective: AY 2021-2022</h6>
+                <h6><strong>Effective: AY 2021-2022</strong></h6>
               </div>
               <div className="container">
                 {renderCourses()}
               </div>
             </div>
-
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

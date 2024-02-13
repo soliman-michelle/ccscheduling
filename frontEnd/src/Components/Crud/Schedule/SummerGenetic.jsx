@@ -32,7 +32,7 @@ const SummerGenetic = () => {
 
     const fetchCurrentAcademicYear = async () => {
       try {
-        const response = await axios.get('https://ccsched.onrender.com/summer_sched/curriculum');
+        const response = await axios.get('http://localhost:8081/summer_sched/curriculum');
         const { start, end, sem } = response.data[0];
         setCurrentYear(`${sem === 1 ? '1st' : '2nd'} Semester A.Y. ${start}-${end}`);
       } catch (error) {
@@ -54,9 +54,9 @@ const SummerGenetic = () => {
       const fetchData = async () => {
         try {
           const [summerResponse, roomResponse, universityInfoResponse] = await Promise.all([
-            axios.get('https://ccsched.onrender.com/summer_sched/data'),
-            axios.get('https://ccsched.onrender.com/summer_sched/room'),
-            axios.get('https://ccsched.onrender.com/university-info')
+            axios.get('http://localhost:8081/summer_sched/data'),
+            axios.get('http://localhost:8081/summer_sched/room'),
+            axios.get('http://localhost:8081/university-info')
           ]);
     
           const summerData = summerResponse.data;
@@ -87,7 +87,7 @@ const SummerGenetic = () => {
     useEffect(() => {
       const fetchAcademicYears = async () => {
         try {
-          const response = await axios.get('https://ccsched.onrender.com/summer_sched/archive');
+          const response = await axios.get('http://localhost:8081/summer_sched/archive');
           setAcademicYears(response.data); // Assuming response.data is an array of academic years
           setSemester(response.data); // Assuming response.data is an array of academic years
         } catch (error) {
@@ -141,7 +141,7 @@ const SummerGenetic = () => {
 
     const generateRandomSchedule = async () => {
       try {
-          const response = await axios.get('https://ccsched.onrender.com/summer_sched/room');
+          const response = await axios.get('http://localhost:8081/summer_sched/room');
           const roomData = response.data;
   
           let scheduleTime = [];
@@ -498,6 +498,7 @@ const renderTableBody = (professor) => {
   const professorName = professor.professorName;
   const professorSchedule = bestSchedule.filter((classItem) => classItem.prof === professorName);
 
+
   return (
     <tbody>
       {timeSlots.map((slot, slotIndex) => (
@@ -554,7 +555,7 @@ const handleSavePDF = async () => {
                   };
   
                   console.log("PAY: ", payload);
-                  const response = await axios.put(`https://ccsched.onrender.com/summer_sched/${classId}/update`, payload);
+                  const response = await axios.put(`http://localhost:8081/summer_sched/${classId}/update`, payload);
                   console.log('Update response:', response.data);
                   break; // Once found, exit the loop to avoid unnecessary iterations
               }
@@ -571,8 +572,8 @@ const handleSavePDF = async () => {
           const scheduleTable = document.getElementById(`schedule-table-${i}`);
 
           if (universityInfo) {
-              const universityLogoUrl = `https://ccsched.onrender.com/${universityInfo.universityLogo}`;
-              const departmentLogoUrl = `https://ccsched.onrender.com/${universityInfo.departmentLogo}`;
+              const universityLogoUrl = `http://localhost:8081/${universityInfo.universityLogo}`;
+              const departmentLogoUrl = `http://localhost:8081/${universityInfo.departmentLogo}`;
               const schoolNameUppercase = universityInfo.schoolName.toUpperCase();
 
               pdf.addImage(universityLogoUrl, 'JPEG', 20, 10, 25, 25);
@@ -636,6 +637,11 @@ const isTimeInRange = (currentTime, startTime, endTime) => {
 
 return (
   <div>
+    <style>{`
+    
+
+    
+    `}</style>
       <div className="row">
       <p id="currentYear">{currentYear}</p>
       <div className="col-md-3">
@@ -671,9 +677,13 @@ return (
       {isGenerating ? "Generating..." : "Generate Classes"} {/* Change button text based on generation state */}
   </button>
 </div>
+
+
+
+<div class="table-container container-fluid">
     {professorsSchedule.map((professor, professorIndex) => (
       <div key={professorIndex}>
-        <h3>{professor.professorName} Schedule</h3>
+        <h3>{professor.professorName}'s Schedule</h3>
         <table id={`schedule-table-${professorIndex}`} className="schedule-table">
           <thead>
             <tr>
@@ -686,11 +696,12 @@ return (
           {renderTableBody(professor, professorIndex)}
         </table>
       </div>
+
     ))}
     <button onClick={handleSavePDF} disabled={pdfLoading}>
     {pdfLoading ? "Generating PDF..." : "Save as PDF"}
   </button>
-
+  </div>
   </div>
 );
 

@@ -51,7 +51,7 @@
 
     const fetchData = async () => {
       try {
-        const res = await axios.get("https://ccsched.onrender.com/user");
+        const res = await axios.get("http://localhost:8081/user");
         setUser(res.data);
       } catch (err) {
         console.error(err);
@@ -64,7 +64,7 @@
 
     const handleEditUser = async (userId, updatedUserData) => {
       try {
-        await axios.put(`https://ccsched.onrender.com/user/${userId}/update`, updatedUserData, {
+        await axios.put(`http://localhost:8081/user/${userId}/update`, updatedUserData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -80,7 +80,7 @@
     const handleDeleteUser = async (userId) => {
       try {
         console.log(`Deleting user with ID: ${userId}`);
-        await axios.delete(`https://ccsched.onrender.com/user/` + userId + `/delete`);
+        await axios.delete(`http://localhost:8081/user/` + userId + `/delete`);
         console.log(`User with ID ${userId} deleted successfully`);
         setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== userId)); // Update the filter condition
         setShowDeleteSuccessAlert(true);

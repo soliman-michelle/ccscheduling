@@ -103,12 +103,12 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
   
     try {
       // Check if the user already exists
-      const response = await axios.get(`https://ccsched.onrender.com/user/check/${email}/${username}/${firstName}/${lastName}`);
+      const response = await axios.get(`http://localhost:8081/user/check/${email}/${username}/${firstName}/${lastName}`);
 
       if (response.data.exists) {
         setShowUserExistsAlert(true);
       } else {
-      const response = await axios.post('https://ccsched.onrender.com/user/create', formData, {
+      const response = await axios.post('http://localhost:8081/user/create', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -131,7 +131,7 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
   
   useEffect(() => {
     // Fetch role data from the server
-    axios.get('https://ccsched.onrender.com/user/roles')
+    axios.get('http://localhost:8081/user/roles')
       .then((response) => {
         setRoleData(response.data);
       })
@@ -160,7 +160,19 @@ const AddAccount = ({ show, handleClose, handleAdd }) => {
 
   return (
     <div>
-      <Button variant="primary" onClick={handleClose}>
+                  <style> {`
+        .small-btn {
+        @media (min-width: 320px) {
+        font-size: 12px;
+      }
+      @media (min-width: 1024px){
+        font-size: 15px;
+      }
+    }
+      `}
+
+      </style>
+      <Button variant="primary" onClick={handleClose} className = "small-btn">
       <FontAwesomeIcon icon={faPlus} /> Add User
       </Button>
       <Modal show={show} onHide={handleClose} size="xl">

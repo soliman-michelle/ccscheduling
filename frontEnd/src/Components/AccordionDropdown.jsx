@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { IoIosArrowDropup, IoIosArrowDropdown } from "react-icons/io";
 import { Link } from 'react-router-dom';
 
 const AccordionDropdown = ({ title, items }) => {
@@ -11,13 +12,13 @@ const AccordionDropdown = ({ title, items }) => {
 
   const itemStyle = {
     textDecoration: 'none', // Remove underline
-    color: 'gray',
+    color: 'white',
     display: 'flex',
     alignItems: 'center',
   };
   const accordionTitleStyle = {
-    color: 'gray',
-    marginRight: '20px',
+    color: 'white',
+    marginRight: '50px',
     display: 'flex',
     alignItems: 'center',
   };
@@ -30,7 +31,9 @@ const AccordionDropdown = ({ title, items }) => {
           type="button"
           onClick={toggleAccordion}
         >
-          {title} {isOpen ? '-' : '+'}
+          {title} {isOpen ? (<IoIosArrowDropup style = {{marginLeft: '10px'}} />)
+          
+          : (<IoIosArrowDropdown style = {{marginLeft: '10px'}} />)}
         </button>
       </h2>
       <div className={`accordion-collapse ${isOpen ? 'show' : 'collapse'}`}>

@@ -25,7 +25,7 @@ const SeeSpecialization = () => {
 
   const handleEditSpecialization = async (specializationId, updatedSpecializationData) => {
     try {
-      await axios.put(`https://ccsched.onrender.com/specialization/` +specializationId + '/update', updatedSpecializationData);
+      await axios.put(`http://localhost:8081/specialization/` +specializationId + '/update', updatedSpecializationData);
       fetchData(); // Refresh data after updating
     } catch (error) {
       console.error(error);
@@ -36,7 +36,7 @@ const SeeSpecialization = () => {
     console.log("1: " , specialization.course_id);
     try {
       // Perform deletion in the program_course_assignment_reference table
-      await axios.delete(`https://ccsched.onrender.com/specialization/${User_id}/${specialization.course_id}/delete`);
+      await axios.delete(`http://localhost:8081/specialization/${User_id}/${specialization.course_id}/delete`);
       console.log(`Course with ID ${User_id}  for User ${specialization.course_id}deleted successfully in program_course_assignment_reference`);
     } catch (error) {
     }
@@ -44,7 +44,7 @@ const SeeSpecialization = () => {
   
   const fetchData = async () => {
     try {
-      const res = await axios.get(`https://ccsched.onrender.com/specialization/course/${User_id}`);
+      const res = await axios.get(`http://localhost:8081/specialization/course/${User_id}`);
       if (Array.isArray(res.data)) {
         setSpecialization(res.data);
         console.log("Umay", res.data);

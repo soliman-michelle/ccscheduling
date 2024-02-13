@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Header from './../Header';
+import Sidebar from './../Sidebar';
 
 const Curriculum = () => {
   const [startYear, setStartYear] = useState('');
@@ -9,6 +11,11 @@ const Curriculum = () => {
   const [currentYear, setCurrentYear] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
   
   useEffect(() => {
     fetchCurrentAcademicYear();
@@ -26,7 +33,7 @@ const Curriculum = () => {
 
   const fetchCurrentAcademicYear = async () => {
     try {
-      const response = await axios.get('https://ccsched.onrender.com/summer_sched/curriculum');
+      const response = await axios.get('http://localhost:8081/summer_sched/curriculum');
       const { start, end, sem } = response.data[0];
       setCurrentYear(`${sem === 1 ? '1st' : '2nd'} Semester A.Y. ${start}-${end}`);
     } catch (error) {
@@ -73,14 +80,14 @@ const Curriculum = () => {
     }
   
     try {
-      const checkResponse = await axios.get(`https://ccsched.onrender.com/rooms/check/${startYear}/${endYear}/${semester}`);
+      const checkResponse = await axios.get(`http://localhost:8081/rooms/check/${startYear}/${endYear}/${semester}`);
       if (checkResponse.data.exists) {
         setErrorMessage('The academic year and semester already exist.');
         setTimeout(() => setErrorMessage(''), 2000);
         return; 
       }else {
          // If not exist, save the academic year
-      const response = await axios.post('https://ccsched.onrender.com/save-academic-year', {
+      const response = await axios.post('http://localhost:8081/save-academic-year', {
         startYear: startYear,
         endYear: endYear,
         semester: semester
@@ -99,9 +106,16 @@ const Curriculum = () => {
   };
   
   return (
-    <div className="container mt-5">
 
-      <h2>Curriculum</h2>
+    <div className="h-100">
+    <div className="wrapper">
+    <Sidebar isSidebarOpen={isSidebarOpen} />
+      <div className = "main">
+        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/>
+        <div className = "container">
+    <div className="container mt-5">
+      <div className = "card card-body m-5 p-5 shadow p-3 mb-5 bg-white rounded" style = {{backgroundImage: "url('/pass.png')", backgroundSize: 'cover'}}>
+      <h2><strong>Curriculum</strong></h2>
       {successMessage && (
         <div className="alert alert-success" role="alert">
           {successMessage}
@@ -163,7 +177,12 @@ const Curriculum = () => {
           Submit
         </button>
       </form>
+      </div>
     </div>
+    </div>
+          </div>
+        </div>
+        </div>
   );
 };
 

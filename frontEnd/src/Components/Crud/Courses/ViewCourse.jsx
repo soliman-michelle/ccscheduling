@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import ReactPaginate from 'react-paginate'; // Import ReactPaginate
 import AddCourse from './AddCourse';
@@ -19,7 +19,7 @@ const ViewCourse = () => {
   const [showProgramModal, setShowProgramModal] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState('BSIT-BA');
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 10; // Number of items to display per page
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const indexOfLastItem = (currentPage + 1) * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = course.slice(indexOfFirstItem, indexOfLastItem);
@@ -57,7 +57,7 @@ const ViewCourse = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`https://ccsched.onrender.com/course`);
+      const res = await axios.get(`http://localhost:8081/course`);
       setCourse(res.data);
     } catch (err) {
       console.error(err);
@@ -71,7 +71,7 @@ const ViewCourse = () => {
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const response = await axios.get('https://ccsched.onrender.com/course/program');
+        const response = await axios.get('http://localhost:8081/course/program');
         console.log("Course: ", response.data);
         setProgramOptions(response.data);
       } catch (error) {
@@ -84,7 +84,7 @@ const ViewCourse = () => {
 
   const handleEditCourse = async (courseCode, courseName, updatedCourseData) => {
     try {
-      const response = await axios.put(`https://ccsched.onrender.com/course/${courseCode}/${courseName}/update`, updatedCourseData);
+      const response = await axios.put(`http://localhost:8081/course/${courseCode}/${courseName}/update`, updatedCourseData);
       console.log('Response:', response.data); // Log the response
       fetchData(); // Refresh data after updating
     } catch (error) {
@@ -94,7 +94,7 @@ const ViewCourse = () => {
   
   const handleDeleteCourse = async (courseId) => {
     try {
-      await axios.delete(`https://ccsched.onrender.com/course/${courseId}/delete`);
+      await axios.delete(`http://localhost:8081/course/${courseId}/delete`);
       setCourse((prevCourse) => prevCourse.filter((courseItem) => courseItem.course_id !== courseId));
       setShowDeleteSuccessAlert(true);
       setTimeout(() => {
@@ -119,8 +119,95 @@ const handlePageChange = (selected) => {
 
   return (
     <div>
-     
-      <section className="home-section">
+           <style>
+        {`
+
+@media (min-width: 768px) {
+  .container{
+    width:100%;
+  }
+}
+
+.container header .filterEntries {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filterEntries .entries {
+  color: #000000;
+}
+
+.filterEntries.entries select, .filterEntries .filter input {
+  padding: 7px 10px;
+  border: 1px solid #000000;
+  color: #ffffff;
+  background: #ffffff;
+  border-radius: 5px;
+  outline: none;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.filterEntries .entries select{
+  padding: 5px 10px;
+}
+
+.filterEntries .filter {
+  display: flex;
+  align-items: center;
+}
+
+.filter label {
+  color:#ffffff;
+  margin-right: 5px;
+}
+
+.filter input:focus{
+  border-color: rgb(255, 0, 162);
+}
+        .custom-table th,
+        .custom-table td{
+          border: 4px
+          solid #ffff;
+        }
+
+
+
+        @media (max-width: 768px) {
+  .custom-table {
+    overflow-x: auto;
+    white-space: nowrap; /* Prevent line breaks */
+  }
+}
+
+
+        .content .card{
+          padding: 20px;
+          padding-top: 30px;
+          margin-left: 10px;
+          margin-right:10px;
+          margin-top: 20px;
+          font-size: 14px;
+          border-radius: 10px;
+          background-image: url('/cover.png');
+          background-size: 100%;
+          background-position: center;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          color: #ffffff;
+}
+        
+
+</style>
+
+        `}
+      </style>
+      <div className = "content">
+      <div className = "card">
+        <h1>COURSES</h1>
+      </div>
+      </div>
+      <section className="home-section pt-2">
           {/* Alert for successful deletion */}
      {showDeleteSuccessAlert && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
@@ -128,22 +215,35 @@ const handlePageChange = (selected) => {
           <button type="button" className="btn-close" onClick={() => setShowDeleteSuccessAlert(false)} aria-label="Close"></button>
         </div>
       )}
-        <div className='container' style={{marginTop: '-50px'}}>
+        <div className='container-fluid'>
           <div className='row'>
-            <Col md={10}>
+
+          <header>
+            <div class = "filterEntries">
               <AddCourse
                 show={showAddCourseModal}
                 handleClose={toggleAddCourseModal}
                 handleAdd={handleAddcourse}
               />
+            <Col md={8}>
+              <Button className = "small-button" onClick={toggleProgramModal}>View</Button>
             </Col>
-            <Col md={2}>
-              <Button onClick={toggleProgramModal}>View</Button>
-            </Col>
-            <div className='col-md-12 mt-2 '>
-              <table className='table table-bordered' style={{fontSize: '16px'}}>
+            <div className="entries">
+              Show {' '}    
+              <select name="" id="table_size" onChange={(e) => setItemsPerPage(parseInt(e.target.value, 10))}>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              </select> entries
+            </div>
+            </div>
+            </header>
+            <div className="card-body">
+              <div className='col-md-12 ps-2 pe-2 overflow-auto'>
+              <table className='custom-table table table-striped .table-responsive table-hover mt-2' style={{fontSize: '16px'}}>
                 <thead>
-                  <tr>
+                  <tr className = "custom-tr table-primary border-dark">
                     <th>No.</th>
                     <th>Course code</th>
                     <th>Course name</th>
@@ -155,14 +255,15 @@ const handlePageChange = (selected) => {
                 <tbody>
                   {currentItems.map((courseItem, id) => (
                     <tr key={courseItem.id} >
-                      <td>{id + 1 + currentPage * itemsPerPage}</td> {/* Calculate the adjusted index */}
-                      <td>{courseItem.course_code}</td>
-                      <td>{courseItem.course_name}</td>
-                      <td>{courseItem.units}</td>
-                      <td>{courseItem.duration}</td>
+                      <td className = "course-info">{id + 1 + currentPage * itemsPerPage}</td> {/* Calculate the adjusted index */}
+                      <td className = "course-info">{courseItem.course_code}</td>
+                      <td className = "course-info">{courseItem.course_name}</td>
+                      <td className = "course-info">{courseItem.units}</td>
+                      <td className = "course-info">{courseItem.duration}</td>
                       <td>
                         <button
                           onClick={() => toggleEditCourseModal(courseItem, courseItem.year_level)}
+                          className="custom-button btn btn-primary"
                         >
                           <FontAwesomeIcon icon={faPen} />
                         </button>
@@ -179,13 +280,14 @@ const handlePageChange = (selected) => {
                 </tbody>
               </table>
             </div>
-          </div>
-        </div>
-      </section>
 
+            <footer>
+      <span className="showEntries">
+  Showing {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, course.length)} of {course.length} entries
+</span>
       <ReactPaginate
-        previousLabel={'previous'}
-        nextLabel={'next'}
+        previousLabel={'< previous'}
+        nextLabel={'next >'}
         breakLabel={'...'}
         pageCount={Math.ceil(course.length / itemsPerPage)}
         marginPagesDisplayed={2}
@@ -195,6 +297,11 @@ const handlePageChange = (selected) => {
         subContainerClassName={'pages pagination'}
         activeClassName={'active'}
       />
+      </footer>
+      </div>
+          </div>
+        </div>
+      </section>
       <Modal show={showProgramModal} onHide={toggleProgramModal}>
   <Modal.Header closeButton>
     <Modal.Title>Filter Courses by Program</Modal.Title>

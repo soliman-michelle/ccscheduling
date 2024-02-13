@@ -16,7 +16,7 @@ const EditProf = ({ show, handleClose, selectedUser , onEdit }) => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await axios.get('https://ccsched.onrender.com/profs/roles');
+        const response = await axios.get('http://localhost:8081/profs/roles');
         setRoleData(response.data);
 
       } catch (error) {
@@ -44,7 +44,7 @@ const EditProf = ({ show, handleClose, selectedUser , onEdit }) => {
     formData.append('role', editedUser.role);
   
     try {
-      const response = await axios.get(`https://ccsched.onrender.com/profs/check/${editedUser.fname}/${editedUser.lname}`);
+      const response = await axios.get(`http://localhost:8081/profs/check/${editedUser.fname}/${editedUser.lname}`);
   
       if (response.data.exists) {
         // If prof exists, show the alert

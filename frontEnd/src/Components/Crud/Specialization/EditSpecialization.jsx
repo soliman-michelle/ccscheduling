@@ -17,10 +17,10 @@ const EditSpecialization = ({ show, handleClose, selectedSpecialization, onEdit 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userResponse = await axios.get('https://ccsched.onrender.com/user');
+        const userResponse = await axios.get('http://localhost:8081/user');
         setUserData(userResponse.data);
 
-        const courseResponse = await axios.get('https://ccsched.onrender.com/course');
+        const courseResponse = await axios.get('http://localhost:8081/course');
         setCourseData(courseResponse.data);
 
       } catch (error) {

@@ -13,11 +13,11 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
   useEffect(() => {
     const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     if (token) {
-      axios.get('https://ccsched.onrender.com/', { withCredentials: true })
+      axios.get('http://localhost:8081/', { withCredentials: true })
         .then(response => {
           const username = response.data.username;
           // Fetch user's data including image URL by username
-          axios.get(`https://ccsched.onrender.com/userdata/${username}`)
+          axios.get(`http://localhost:8081/userdata/${username}`)
             .then(userDataResponse => {
               // Assuming you have stored user data in state
               setUserData(userDataResponse.data);
@@ -27,7 +27,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
                 const user = userDataResponse.data[0];
                 // Assuming you have an <img> tag for displaying the image
                 return (
-                  <img src={`https://ccsched.onrender.com/${user.images}`} alt="Profile" style={{ width: '50px' }} />
+                  <img src={`http://localhost:8081/${user.images}`} alt="Profile" style={{ width: '50px' }} />
                 );
               }
             })
@@ -47,7 +47,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
   };
 
   const handleLogout = () => {
-    axios.get('https://ccsched.onrender.com/logout') // Create a route to handle logout
+    axios.get('http://localhost:8081/logout') // Create a route to handle logout
       .then(() => {
         localStorage.removeItem('userData'); // Remove stored user data
         window.location.href = '/login'; // Redirect to the login page
@@ -85,7 +85,7 @@ const Header = ({ toggleSidebar, isSidebarOpen }) => {
                   {userData && userData.map((user) => (
                     <div key={user.user_id} className="d-flex align-items-center custom-head">
                       <img
-                        src={`https://ccsched.onrender.com/${user.images}`}
+                        src={`http://localhost:8081/${user.images}`}
                         alt="Profile"
                         style={{
                           width: '40px',

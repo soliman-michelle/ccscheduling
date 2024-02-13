@@ -23,7 +23,7 @@ const ResetPassword = () => {
     // Check if passwords match before proceeding
     if (password === confirmPassword) {
       try {
-        const response = await fetch(`https://ccsched.onrender.com/reset-password/${token}`, {
+        const response = await fetch(`http://localhost:8081/reset-password/${token}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ const ResetPassword = () => {
 
   return (
     <div className="container mt-5">
-      <h2>Reset Password</h2>
+      <b>Reset Password</b>
       {passwordUpdated ? (
         <p className="text-success">Password updated successfully!</p>
       ) : (

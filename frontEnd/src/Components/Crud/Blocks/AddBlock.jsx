@@ -85,13 +85,13 @@ const AddBlock = ({show, handleClose, handleAdd}) => {
         };
         
         try {
-          const response = await axios.get(`https://ccsched.onrender.com/block/check/${program}`);
+          const response = await axios.get(`http://localhost:8081/block/check/${program}`);
 
           if (response.data.exists) {
             setShowBlockExistsAlert(true);
           } else {
             
-          await axios.post('https://ccsched.onrender.com/block/create', newBlock);
+          await axios.post('http://localhost:8081/block/create', newBlock);
           handleAdd(newBlock);
           handleClose();
           setShowSuccessAlert(true);
@@ -103,7 +103,19 @@ const AddBlock = ({show, handleClose, handleAdd}) => {
       };
   return (
     <div>
-      <Button variant="primary" onClick={handleClose}>
+                  <style> {`
+        .small-btn {
+        @media (min-width: 320px) {
+        font-size: 12px;
+      }
+      @media (min-width: 1024px){
+        font-size: 15px;
+      }
+    }
+      `}
+
+      </style>
+      <Button variant="primary" onClick={handleClose} className = "small-btn">
         <FontAwesomeIcon icon={faPlus}/>Add Departamental Block
       </Button>
       <Modal show={show} onHide={handleClose}>

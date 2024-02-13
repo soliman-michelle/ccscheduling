@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.css';
 
 const PasswordReset = () => {
   const [errorMessage, setErrorMessage] = useState('');
@@ -9,7 +10,7 @@ const PasswordReset = () => {
     const email = e.target.email.value;
 
     try {
-      const response = await fetch('https://ccsched.onrender.com/forgot-password', {
+      const response = await fetch('http://localhost:3000/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -31,9 +32,35 @@ const PasswordReset = () => {
     }
   };
 
+    const customStyles = {
+    height: "fit-content", // Set height to fit the content
+    maxWidth: "750px", // Set maximum width for the card
+    margin: "auto", // Center the card horizontally
+    marginTop: "calc(50vh - 150px)", // Center the card vertically
+    "@media (max-width: 450px)": {
+      height: "100%",
+    },
+  };
+
+  const backgroundStyle = {
+    backgroundImage: 'url("background.png")', // Specify the URL as a string
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+    minHeight: '100vh',
+    minWidth: '100vw',
+    position: 'relative',
+    backgroundAttachment: 'fixed',
+    height: '100%!important'
+  };
+
   return (
-    <div className="container mt-5">
-      <h2>Password Reset</h2>
+    <body className = "h-100"  style={backgroundStyle}>
+    <div className="container mt-5" style={customStyles}>
+      <div className = "pass-card card d-flex m-3">
+        <div className = "card-header text-white" style = {{backgroundColor: 'maroon'}}>
+      <h2><strong>Password Reset</strong></h2>
+      </div>
+      <div className = "card-body">
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="email" className="form-label">Email address</label>
@@ -45,6 +72,9 @@ const PasswordReset = () => {
         <button type="submit" className="btn btn-primary">Submit</button>
       </form>
     </div>
+    </div>
+    </div>
+    </body>
   );
 };
 

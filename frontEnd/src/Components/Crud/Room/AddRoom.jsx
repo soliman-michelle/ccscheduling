@@ -66,14 +66,14 @@ const AddRoom = ({ show, handleClose, handleAdd }) => {
   
     try {
       // Check if the room already exists (after normalizing room names)
-      const response = await axios.get(`https://ccsched.onrender.com/rooms/check/${roomName}`);
+      const response = await axios.get(`http://localhost:8081/rooms/check/${roomName}`);
 
       if (response.data.exists) {
         // If room exists, show the alert
         setShowRoomExistsAlert(true);
       } else {
         // If room doesn't exist, proceed to create it
-        await axios.post('https://ccsched.onrender.com/rooms/create', newRoom);
+        await axios.post('http://localhost:8081/rooms/create', newRoom);
         handleAdd(newRoom);
         handleClose();
         setShowSuccessAlert(true);
@@ -86,7 +86,19 @@ const AddRoom = ({ show, handleClose, handleAdd }) => {
 
   return (
     <div>
-      <Button variant="primary" onClick={handleClose}>
+                  <style> {`
+        .small-btn {
+        @media (min-width: 320px) {
+        font-size: 12px;
+      }
+      @media (min-width: 1024px){
+        font-size: 15px;
+      }
+    }
+      `}
+
+      </style>
+      <Button variant="primary" onClick={handleClose} className = "small-btn">
       <FontAwesomeIcon icon={faPlus} /> Add Room
       </Button>
       <Modal show={show} onHide={handleClose} size='md'>

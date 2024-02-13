@@ -13,17 +13,12 @@ const Specialization = () => {
 
   return (
     <div className="h-100">
-      <div className="class-wrapper">
-        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-
-        <div className='container-fluid'>
-        <div className="row">
-          <div className="col-md-2">
-            <Sidebar isSidebarOpen={isSidebarOpen} />
-          </div>
-          <div className="col-md-10 mt-5">
+    <div className="wrapper">
+    <Sidebar isSidebarOpen={isSidebarOpen} />
+      <div className = "main">
+        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/>
+        <div className = "container">
             <ViewSpecialization/>
-          </div>
         </div>
         </div>
       </div>

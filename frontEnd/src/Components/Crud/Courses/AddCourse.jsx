@@ -43,7 +43,7 @@ const AddCourse = ({ show, handleClose, handleAdd }) => {
   }, [courseData.duration]);
 
   useEffect(() => {
-    axios.get('https://ccsched.onrender.com/course/program')  
+    axios.get('http://localhost:8081/course/program')  
       .then(response => {
         setPrograms(response.data);
         console.log(programs);
@@ -122,14 +122,14 @@ const AddCourse = ({ show, handleClose, handleAdd }) => {
 
     if (Object.keys(validationErrors).length === 0) {
       try {
-        const response = await axios.get(`https://ccsched.onrender.com/course/check/${courseData.course_code}/${courseData.course_name}`);
+        const response = await axios.get(`http://localhost:8081/course/check/${courseData.course_code}/${courseData.course_name}`);
         const courseExists = response.data.exists; // Get the 'exists' property from the response
 
         if (courseExists) {
           setShowRoomExistsAlert(true); // Show the appropriate alert for existing course
         } else {
           // Proceed to create the course if it doesn't exist
-          await axios.post('https://ccsched.onrender.com/course/create', {
+          await axios.post('http://localhost:8081/course/create', {
             ...courseData,
             program: courseData.selectedPrograms,
           });
@@ -168,7 +168,19 @@ const AddCourse = ({ show, handleClose, handleAdd }) => {
   
   return (
     <div>
-      <Button variant="primary" onClick={handleClose}>
+                  <style> {`
+        .small-btn {
+        @media (min-width: 320px) {
+        font-size: 12px;
+      }
+      @media (min-width: 1024px){
+        font-size: 15px;
+      }
+    }
+      `}
+
+      </style>
+      <Button variant="primary" onClick={handleClose} className = "small-btn">
         <FontAwesomeIcon icon={faPlus} /> Add Course
       </Button>
       <Modal show={show} onHide={handleClose} size='lg'>

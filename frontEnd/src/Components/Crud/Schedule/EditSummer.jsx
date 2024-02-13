@@ -11,7 +11,7 @@ const EditSummer = ({ show, handleClose, selectedSummer }) => {
     useEffect(() => {
         const fetchSummerDetails = async () => {
             try {
-                const response = await axios.get(`https://ccsched.onrender.com/manual/summer/${selectedSummer.id}`);
+                const response = await axios.get(`http://localhost:8081/manual/summer/${selectedSummer.id}`);
                 setEditedSummer(response.data);
             } catch (error) {
                 console.error('Error fetching summer class details:', error);
@@ -24,7 +24,7 @@ const EditSummer = ({ show, handleClose, selectedSummer }) => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await axios.get('https://ccsched.onrender.com/manual/courses');
+                const response = await axios.get('http://localhost:8081/manual/courses');
                 setCourses(response.data);
             } catch (error) {
                 console.error('Error fetching courses: ', error);
@@ -38,7 +38,7 @@ const EditSummer = ({ show, handleClose, selectedSummer }) => {
         // Fetch professors
         const fetchProfessors = async () => {
             try {
-                const response = await axios.get(`https://ccsched.onrender.com/manual/professors`);
+                const response = await axios.get(`http://localhost:8081/manual/professors`);
                 setProfessors(response.data);
             } catch (error) {
                 console.error('Error fetching professors:', error);

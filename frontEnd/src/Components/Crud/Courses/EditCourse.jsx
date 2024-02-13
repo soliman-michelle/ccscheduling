@@ -56,7 +56,7 @@ const EditCourse = ({ show, handleClose, selectedCourse, onEdit }) => {
     // Fetch program and year level for the selected course
     const fetchCourseDetails = async () => {
       try {
-        const response = await axios.get(`https://ccsched.onrender.com/course/year/${editedCourse.course_id}`);
+        const response = await axios.get(`http://localhost:8081/course/year/${editedCourse.course_id}`);
         const data = response.data; // Assuming you're getting a single result
         console.log('Fetched Data:', data);
         console.log('Structure of First Item:', data[0]); // Check structure of the first item
@@ -88,7 +88,7 @@ const EditCourse = ({ show, handleClose, selectedCourse, onEdit }) => {
       };
   
       // Make a PUT request to update the course
-      await axios.put(`https://ccsched.onrender.com/course/update/${editedCourseWithProgram.course_id}`, {
+      await axios.put(`http://localhost:8081/course/update/${editedCourseWithProgram.course_id}`, {
         course_code: editedCourseWithProgram.course_code,
         course_name: editedCourseWithProgram.course_name,
         units: editedCourseWithProgram.units,

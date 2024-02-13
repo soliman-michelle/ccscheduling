@@ -27,7 +27,7 @@ const Home = () => {
     axios.defaults.withCredentials = true;
     const blocks = async () => {
         try {
-        const res = await axios.get("https://ccsched.onrender.com/blockCount");
+        const res = await axios.get("http://localhost:8081/blockCount");
         console.log("Block data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
@@ -49,7 +49,7 @@ const Home = () => {
 
     const fetchData = async () => {
         try {
-        const res = await axios.get("https://ccsched.onrender.com/room");
+        const res = await axios.get("http://localhost:8081/room");
         console.log("Room data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
@@ -67,7 +67,7 @@ const Home = () => {
     
     const fetchDatas = async () => {
         try {
-        const res = await axios.get("https://ccsched.onrender.com/prof");
+        const res = await axios.get("http://localhost:8081/prof");
         console.log("Prof data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
@@ -91,7 +91,7 @@ const Home = () => {
       }, [navigate]);
     const fetchClassesCount = async () => {
         try {
-        const res = await axios.get("https://ccsched.onrender.com/classs"); // Update the endpoint to match the server-side route
+        const res = await axios.get("http://localhost:8081/classs"); // Update the endpoint to match the server-side route
         console.log("Classes data:", res.data);
     
         if (res.data && typeof res.data === 'object') {
@@ -113,7 +113,7 @@ const Home = () => {
         fetchDatas();
     }, []);
     useEffect(() => {
-        axios.get('https://ccsched.onrender.com')
+        axios.get('http://localhost:8081')
         .then(res => {
             if(res.data.Status === 'Success' ){
                 setAuth(true)

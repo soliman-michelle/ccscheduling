@@ -6,6 +6,8 @@ import { faPen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DeleteSummer from "./Delete";
 import EditSummer from "./EditSummer";
+import Header from '../../Header';
+import Sidebar from '../../Sidebar';
 
 const ManualSched = () => {
     const [showModal, setShowModal] = useState(false);
@@ -22,6 +24,21 @@ const ManualSched = () => {
     const [selectedFilter, setSelectedFilter] = useState('Professor');
     const [showEditCourseModal, setShowEditCourseModal] = useState(false);
     const [selectedSummer, setSelectedSummer] = useState([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const indexOfLastItem = (currentPage + 1) * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = summer.slice(indexOfFirstItem, indexOfLastItem);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+  
+    const toggleAddRoomModal = () => {
+      setShowAddRoomModal(!showAddRoomModal);
+    };
+
     const openModal = () => {
         setShowModal(true);
     };
@@ -49,7 +66,7 @@ const ManualSched = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const response = await axios.get('https://ccsched.onrender.com/manual/courses');
+                const response = await axios.get('http://localhost:8081/manual/courses');
                 setCourses(response.data);
             } catch (error) {
                 console.error('Error fetching courses: ', error);
@@ -61,7 +78,7 @@ const ManualSched = () => {
 
     const fetchSummer = async () => {
       try {
-          const response = await axios.get('https://ccsched.onrender.com/manual/display');
+          const response = await axios.get('http://localhost:8081/manual/display');
           setSummer(response.data);
       } catch (error) {
           console.error('Error fetching courses: ', error);
@@ -76,7 +93,7 @@ const ManualSched = () => {
         if (selectedCourseId) {
             const fetchProf = async () => {
                 try {
-                    const response = await axios.get(`https://ccsched.onrender.com/manual/professors/${selectedCourseId}`);
+                    const response = await axios.get(`http://localhost:8081/manual/professors/${selectedCourseId}`);
                     setProfessors(response.data);
                 } catch (error) {
                     console.error('Error fetching courses: ', error);
@@ -90,7 +107,7 @@ const ManualSched = () => {
     useEffect(() => {
         const fetchRooms = async () => {
             try {
-                const response = await axios.get('https://ccsched.onrender.com/manual/room');
+                const response = await axios.get('http://localhost:8081/manual/room');
                 setRooms(response.data);
             } catch (error) {
                 console.error('Error fetching professors: ', error);
@@ -102,7 +119,7 @@ const ManualSched = () => {
 
     const handleEditSummer = async (professor, courses, updatedSummerData) => {
       try {
-        const response = await axios.put(`https://ccsched.onrender.com/course/${professor}/${courses}/update`, updatedSummerData);
+        const response = await axios.put(`http://localhost:8081/course/${professor}/${courses}/update`, updatedSummerData);
         console.log('Response:', response.data); // Log the response
         fetchSummer(); // Refresh data after updating
       } catch (error) {
@@ -112,7 +129,7 @@ const ManualSched = () => {
 
     const handleDeleteSummer = async (id) => { // Corrected parameter name from blockId to summer_id
       try {
-        await axios.delete(`https://ccsched.onrender.com/manual/${id}/delete`); // Adjusted URL to match the backend route
+        await axios.delete(`http://localhost:8081/manual/${id}/delete`); // Adjusted URL to match the backend route
     
         setSummer((prevblock) => prevblock.filter((summer) => summer.id !== id));
 
@@ -135,12 +152,12 @@ const ManualSched = () => {
       };
     
       try {
-        const responseExistenceCheck = await axios.get(`https://ccsched.onrender.com/manual/check/${selectedProfId}/${selectedCourseId}`);
+        const responseExistenceCheck = await axios.get(`http://localhost:8081/manual/check/${selectedProfId}/${selectedCourseId}`);
         
         if (responseExistenceCheck.data.exists) {
           console.log("Summer class already exists:", responseExistenceCheck.data);
         } else {
-          const responseAddSummer = await axios.post('https://ccsched.onrender.com/manual/create', summer);
+          const responseAddSummer = await axios.post('http://localhost:8081/manual/create', summer);
           console.log("Summer class added:", responseAddSummer.data);
           closeModal();
           fetchSummer();
@@ -152,13 +169,123 @@ const ManualSched = () => {
         console.error('Error inserting data into the database: ', error);
       }
     };
+
     
+    
+    const handlePageChange = (selected) => {
+      setCurrentPage(selected.selected);
+    };
   
-  return (
+    return (
       <div>
-        <Button variant="primary" onClick={openModal}>+ Summer Class</Button>
-        
+           <style>
+        {`
+
+@media (min-width: 768px) {
+  .container{
+    width:100%;
+  }
+}
+
+.container header .filterEntries {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filterEntries .entries {
+  color: #000000;
+}
+
+.filterEntries.entries select, .filterEntries .filter input {
+  padding: 7px 10px;
+  border: 1px solid #000000;
+  color: #ffffff;
+  background: #ffffff;
+  border-radius: 5px;
+  outline: none;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.filterEntries .entries select{
+  padding: 5px 10px;
+}
+
+.filterEntries .filter {
+  display: flex;
+  align-items: center;
+}
+
+.filter label {
+  color:#ffffff;
+  margin-right: 5px;
+}
+
+.filter input:focus{
+  border-color: rgb(255, 0, 162);
+}
+        .custom-table th,
+        .custom-table td{
+          border: 4px
+          solid #ffff;
+        }
+
+        @media (max-width: 768px) {
+  .custom-table {
+    overflow-x: auto;
+    white-space: nowrap; /* Prevent line breaks */
+  }
+}
+
+
+        .content .card{
+          padding: 20px;
+          padding-top: 30px;
+          margin-left: 10px;
+          margin-right:10px;
+          margin-top: 20px;
+          font-size: 14px;
+          border-radius: 10px;
+          background-image: url('/cover.png');
+          background-size: 100%;
+          background-position: center;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          color: #ffffff;
+}
+.small-btn {
+  @media (min-width: 320px) {
+  font-size: 12px;
+}
+@media (min-width: 1024px){
+  font-size: 15px;
+}
+}
+        `}
+
+      </style>
+      <div className="h-100">
+    <div className="wrapper">
+    <Sidebar isSidebarOpen={isSidebarOpen} />
+      <div className = "main">
+        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/>
+          <div className="container">
+
+
+        <div className = "content">
+      <div className = "card">
+        <h1>SUMMER CLASS</h1>
+      </div>
+      </div>
+
+      <section className="home-section pt-2">
+      <div className='container-fluid'>
+          <div className='row'>
+          <header>
+            <div className='filterEntries'>
+        <Button variant="primary" onClick={openModal} className = "small-btn">+ Summer Class</Button>
         <Modal show={showModal} onHide={closeModal}>
+          
   <Modal.Header closeButton>
     <Modal.Title>Add Summer Class</Modal.Title>
   </Modal.Header>
@@ -208,25 +335,38 @@ const ManualSched = () => {
     </div>
   </Modal.Body>
 </Modal>
+<div className="entries">
+              Show {' '}    
+              <select name="" id="table_size" onChange={(e) => setItemsPerPage(parseInt(e.target.value, 10))}>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              </select> entries
+            </div>
+            </div>
+            </header>
 
     
-        <div>
-          <table className="table">
-            <thead>
-              <tr>
+            <div className="card-body">
+              <div className='col-md-12 ps-2 pe-2 overflow-auto'>
+              <table className='custom-table custom-table table table-striped table-hover .table-responsive mt-2'>
+                <thead>
+                <tr className = "table-primary border-dark">
                 <th>Course Code</th>
                 <th>Course Name</th>
                 <th>Professor</th>
                 <th>Slot</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {summer.map((item, index) => (
                 <tr key={index}>
-                  <td>{item.course_code}</td>
-                  <td>{item.course_name}</td>
-                  <td>{item.fname} {item.lname}</td>
-                  <td>{item.slot}</td>
+                  <td className = "course-info">{item.course_code}</td>
+                  <td className = "course-info">{item.course_name}</td>
+                  <td className = "course-info">{item.fname} {item.lname}</td>
+                  <td className = "course-info">{item.slot}</td>
                   <td>
                     <button
                       onClick={() => toggleEditSummerModal(item)}
@@ -239,13 +379,7 @@ const ManualSched = () => {
                       handleClose={() => toggleModalDelete(index)} // Pass index to identify which modal to close
                       handleDelete={() => handleDeleteSummer(item.id)}
                     />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      {showEditCourseModal && (
+                          {showEditCourseModal && (
         <EditSummer
             show={showEditCourseModal}
             handleClose={() => setShowEditCourseModal(false)}
@@ -253,7 +387,22 @@ const ManualSched = () => {
             onEdit={handleEditSummer}
         />
     )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+
+        </div>
+        </div>    
+        </div>
+      </section>
   </div>
+  </div>
+        </div>
+      </div>
+    </div>
     );
 }   
 

@@ -35,7 +35,7 @@ const ViewProf = () => {
 
   const fetchRoleName = async (roleId) => {
     try {
-      const res = await axios.get(`https://ccsched.onrender.com/profs/roles/${roleId}`);
+      const res = await axios.get(`http://localhost:8081/profs/roles/${roleId}`);
       return res.data[0].role;
     } catch (err) {
       console.error(`Error fetching role name for roleId ${roleId}:`, err);
@@ -45,7 +45,7 @@ const ViewProf = () => {
 
   const fetchDataAndRoles = async () => {
     try {
-      const res = await axios.get("https://ccsched.onrender.com/profs");
+      const res = await axios.get("http://localhost:8081/profs");
       setUser(res.data);
 
       const updatedUser = await Promise.all(
@@ -80,7 +80,7 @@ const ViewProf = () => {
   
   const handleEditUser = async (userId, updatedUserData) => {
     try {
-      const response = await axios.put(`https://ccsched.onrender.com/profs/${userId}/update`, updatedUserData);
+      const response = await axios.put(`http://localhost:8081/profs/${userId}/update`, updatedUserData);
       console.log('Server response:', response.data); // Log the response from the server
 
       if (response.status === 200) {
@@ -105,7 +105,7 @@ const ViewProf = () => {
   
     try {
       // Wait for the deletion to be successful
-      await axios.delete(`https://ccsched.onrender.com/profs/${userId}/delete`);
+      await axios.delete(`http://localhost:8081/profs/${userId}/delete`);
       fetchDataAndRoles();
   
       if (selectedUser && selectedUser.user_id === userId) {

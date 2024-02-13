@@ -17,7 +17,7 @@ const DeleteCourse = ({ handleDelete, courseId }) => {
 
   return (
     <div>
-      <button onClick={toggleModalDelete}>
+      <button onClick={toggleModalDelete} className="custom-button btn btn-danger">
         <FontAwesomeIcon icon={faTrash} />
       </button>
 

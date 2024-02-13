@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 import { useParams } from 'react-router-dom';
+import Header from './Header';
+import Sidebar from './Sidebar';
 
 const NewPassword = () => {
   const [oldPassword, setOldPassword] = useState('');
@@ -9,6 +11,11 @@ const NewPassword = () => {
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [passwordUpdated, setPasswordUpdated] = useState(false);
   const { username } = useParams();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   const handleOldPassword = (event) => {
     setOldPassword(event.target.value);
@@ -29,7 +36,7 @@ const NewPassword = () => {
     if (password === confirmPassword) {
       try {
         // Verify the old password before changing the password
-        const oldPasswordResponse = await fetch('https://ccsched.onrender.com/verify-old-password/', {
+        const oldPasswordResponse = await fetch('http://localhost:8081/verify-old-password/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -42,7 +49,7 @@ const NewPassword = () => {
         }
   
         // Proceed to change the password if old password verification succeeds
-        const newPasswordResponse = await fetch('https://ccsched.onrender.com/reset-password/', {
+        const newPasswordResponse = await fetch('http://localhost:8081/reset-password/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -67,8 +74,16 @@ const NewPassword = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Reset Password</h2>
+    <div className="h-100">
+    <div className="wrapper">
+    <Sidebar isSidebarOpen={isSidebarOpen} />
+      <div className = "main">
+        <Header toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen}/>
+
+        <div className="container-fluid">
+    <div className="container mt-5 mb-4">
+    <div className = "card card-body p-5 shadow p-3 mb-5 bg-white rounded" style = {{backgroundImage: "url('/pass.png')", backgroundSize: 'cover'}}>
+      <h2><strong>Reset Password</strong></h2>
       {passwordUpdated ? (
         <p className="text-success">Password updated successfully!</p>
       ) : (
@@ -126,7 +141,12 @@ const NewPassword = () => {
           </button>
         </form>
       )}
+      </div>
+      </div>
     </div>
+    </div>
+      </div>
+      </div>
   );
 };
 

@@ -46,7 +46,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await axios.get('https://ccsched.onrender.com/profs/roles');
+        const response = await axios.get('http://localhost:8081/profs/roles');
         setRoleData(response.data);
       } catch (error) {
         console.error(error);
@@ -57,7 +57,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
 
   const fetchAllSpecializations = async () => {
     try {
-      const response = await axios.get('https://ccsched.onrender.com/specialization/courses');
+      const response = await axios.get('http://localhost:8081/specialization/courses');
       setSpecialization(response.data);
     } catch (error) {
       console.error(error);
@@ -80,7 +80,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
     setCourseFields([{ specialization: '', duration: '', slot: '' }]);
     
     try {
-      const response = await axios.get(`https://ccsched.onrender.com/profs/roles/${selectedRoleId}`);
+      const response = await axios.get(`http://localhost:8081/profs/roles/${selectedRoleId}`);
       const roleData = response.data;
       
       if (roleData.length > 0) { // Ensure that the response contains data
@@ -94,7 +94,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   
     if (selectedRoleId === "1") {
       try {
-        const response = await axios.get('https://ccsched.onrender.com/specialization/courses');
+        const response = await axios.get('http://localhost:8081/specialization/courses');
         const res = response.data;
         const filteredCourses = res.filter(course => course.duration <= 3);
         setSpecialization(filteredCourses);
@@ -119,9 +119,14 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   };
 
   const handleCourseChange = async (courseId) => {
+    // Check if the course is already selected
+    if (selectedCourses.includes(courseId)) {
+      // If already selected, remove it from the selected courses list
+      const updatedSelectedCourses = selectedCourses.filter(course => course !== courseId);
+      setSelectedCourses(updatedSelectedCourses);
+    }
   
     const selectedCourse = specialization.find(course => parseInt(course.course_id) === parseInt(courseId));
-    console.log("selectedCourse: ", selectedCourse);
     
     if (selectedCourse) {
       const newCourseDurations = { ...courseDurations };
@@ -129,7 +134,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
       setCourseDurations(newCourseDurations); // Update courseDurations state with the new duration
   
       try {
-        const response = await axios.get(`https://ccsched.onrender.com/specialization/block/${courseId}`);
+        const response = await axios.get(`http://localhost:8081/specialization/block/${courseId}`);
         const totalBlocks = response.data[0].available_blocks;
         console.log("Response Data:", response.data);
         console.log("totalBlocks: ", totalBlocks);
@@ -187,16 +192,15 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
   
     try {
       // Send a POST request to the backend to check if the professor already exists
-      const response = await axios.get(`https://ccsched.onrender.com/profs/check/${fname}/${lname}`);
+      const response = await axios.get(`http://localhost:8081/profs/check/${fname}/${lname}`);
       if (response.data.exists) {
         setIsProfNameValid(false);
         return; // Exit function if professor already exists
       }
   
       // If professor doesn't exist, send a POST request to add the professor and associated courses
-      await axios.post("https://ccsched.onrender.com/profs/create", userData);
+      await axios.post("http://localhost:8081/profs/create", userData);
       handleAdd(userData); // Update UI with newly added professor
-      handleClose();
       setFname('');
       setMname('');
       setLname('');
@@ -211,6 +215,7 @@ const AddProf = ({ show, handleClose, handleAdd }) => {
       setCourseFields([]);
       setCourses([]);
       setCourseDurations({});
+      handleClose(); // Close the modal
     } catch (error) {
       console.error(error);
     }
@@ -232,7 +237,7 @@ const handleAddCourse = async () => {
 
   if (role === "1") {
     try {
-      const response = await axios.get('https://ccsched.onrender.com/specialization/courses');
+      const response = await axios.get('http://localhost:8081/specialization/courses');
       const res = response.data;
       const filteredCourses = res.filter(course => course.duration <= 3);
       setSpecialization(filteredCourses);
@@ -375,80 +380,81 @@ const handleAddCourse = async () => {
             </div>
             {showCourseFields && (
   <div>
-        {courseFields.map((field, index) => (
-          <div key={index}>
-            <div className="row">
-              <div className="col-md-7">
-                <Form.Control 
-                  as="select" 
-                  value={field.specialization} 
-                  onChange={(e) => {
-                    const courseId = e.target.value;
-                    handleCourseChange(courseId);
-                    const newFields = [...courseFields];
-                    newFields[index].specialization = courseId;
-                    setCourseFields(newFields);
-                  }} 
-                  className='mt-2'
-                >
-                  <option value="">Select Course</option>
-                  {specialization
-                    .map((course) => (
-                      <option key={course.course_id} value={course.course_id}>
-                        {course.course_code} {course.course_name}
-                      </option>
-                  ))}
-                </Form.Control>
-              </div>
-              <div className="col-md-2">
-                <Form.Control
-                  type="number"
-                  placeholder="Duration"
-                  value={field.duration}
-                  className="mt-2"
-                  readOnly
-                />
-              </div>
-              <div className="col-md-2">
-                <Form.Control
-                  type="number"
-                  placeholder="Enter Block"
-                  value={field.slot}
-                  className='mt-2'
-                  onChange={(e) => {
-                    // Parse the entered value as an integer
-                    const enteredValue = parseInt(e.target.value);
-                    // Check if the entered value exceeds the maximum allowed value
-                    if (enteredValue > block) {
-                      // If the entered value is greater than the maximum allowed value,
-                      // set the input field value to the maximum allowed value
-                      const newFields = [...courseFields];
-                      newFields[index].slot = block.toString();
-                      setCourseFields(newFields);
-                    } else {
-                      // If the entered value is within the allowed range, update the state normally
-                      const newFields = [...courseFields];
-                      newFields[index].slot = e.target.value;
-                      setCourseFields(newFields);
-                    }
-                  }}
-                  required
-                  max={block}
-                />
-              </div>
-              <div className="col-md-1">
-                <FontAwesomeIcon
-                  icon={faTimes}
-                  style={{ color: 'red', marginLeft: '5px', cursor: 'pointer' }}
-                  className='mt-3'
-                  onClick={() => handleRemoveCourseField(index)} // Call the removal function with the index
-                />
-              </div>
-            </div>
+    {courseFields.map((field, index) => (
+      <div key={index}>
+        <div className="row">
+          <div className="col-md-7">
+            <Form.Control 
+              as="select" 
+              value={field.specialization} 
+              onChange={(e) => {
+                const courseId = e.target.value;
+                handleCourseChange(courseId);
+                const newFields = [...courseFields];
+                newFields[index].specialization = courseId;
+                setCourseFields(newFields);
+              }} 
+              className='mt-2'
+            >
+              <option value="">Select Course</option>
+              {specialization
+                .filter(course => !selectedCourses.includes(course.course_id))
+                .map((course) => (
+                  <option key={course.course_id} value={course.course_id}>
+                    {course.course_code} {course.course_name}
+                  </option>
+              ))}
+            </Form.Control>
           </div>
-        ))}
+          <div className="col-md-2">
+            <Form.Control
+              type="number"
+              placeholder="Duration"
+              value={field.duration}
+              className="mt-2"
+              readOnly
+            />
+          </div>
+          <div className="col-md-2">
+            <Form.Control
+              type="number"
+              placeholder="Enter Block"
+              value={field.slot}
+              className='mt-2'
+              onChange={(e) => {
+                // Parse the entered value as an integer
+                const enteredValue = parseInt(e.target.value);
+                // Check if the entered value exceeds the maximum allowed value
+                if (enteredValue > block) {
+                  // If the entered value is greater than the maximum allowed value,
+                  // set the input field value to the maximum allowed value
+                  const newFields = [...courseFields];
+                  newFields[index].slot = block.toString();
+                  setCourseFields(newFields);
+                } else {
+                  // If the entered value is within the allowed range, update the state normally
+                  const newFields = [...courseFields];
+                  newFields[index].slot = e.target.value;
+                  setCourseFields(newFields);
+                }
+              }}
+              required
+              max={block}
+            />
+          </div>
+          <div className="col-md-1">
+            <FontAwesomeIcon
+              icon={faTimes}
+              style={{ color: 'red', marginLeft: '5px', cursor: 'pointer' }}
+              className='mt-3'
+              onClick={() => handleRemoveCourseField(index)} // Call the removal function with the index
+            />
+          </div>
+        </div>
       </div>
-    )}
+    ))}
+  </div>
+)}
  <div className="row mt-4">
           <div className="col-md-12">
             <i>Note: The total number of blocks based on selected courses is {block}.</i>

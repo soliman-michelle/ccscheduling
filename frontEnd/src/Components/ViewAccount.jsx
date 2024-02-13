@@ -25,14 +25,14 @@ const ViewAccount = () => {
       };
   
       const handleAddUser = (newUser) => {
-        console.log(newUser); 
+        console.log(newUser); // Log the new user
         setUser([...user, newUser]);
         fetchData(); 
       };
   
       const fetchData = async () => {
         try {
-          const res = await axios.get("https://ccsched.onrender.com/user");
+          const res = await axios.get("http://localhost:8081/user");
           setUser(res.data);
         } catch (err) {
           console.error(err);
@@ -46,9 +46,9 @@ const ViewAccount = () => {
       const handleDeleteUser = async (userId) => {
         try {
           console.log(`Deleting user with ID: ${userId}`);
-          await axios.delete(`https://ccsched.onrender.com/user/` + userId + `/delete`);
+          await axios.delete(`http://localhost:8081/user/` + userId + `/delete`);
           console.log(`User with ID ${userId} deleted successfully`);
-          setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== userId)); 
+          setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== userId)); // Update the filter condition
           setShowDeleteSuccessAlert(true);
         setTimeout(() => {
           setShowDeleteSuccessAlert(false);
@@ -148,11 +148,12 @@ const ViewAccount = () => {
 
         <div className = "content">
       <div className = "card">
-      <h1>ACCOUNTS</h1>
+        <h1>ACCOUNTS</h1>
       </div>
       </div>
 
       <section className="home-section pt-2">
+        {/* Alert for successful deletion */}
      {showDeleteSuccessAlert && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           <strong>Success!</strong> User Deleted successfully!
