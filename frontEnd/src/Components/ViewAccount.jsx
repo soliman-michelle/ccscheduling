@@ -48,7 +48,7 @@ const ViewAccount = () => {
           console.log(`Deleting user with ID: ${userId}`);
           await axios.delete(`https://ccsched.onrender.com/user/` + userId + `/delete`);
           console.log(`User with ID ${userId} deleted successfully`);
-          setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== userId)); // Update the filter condition
+          setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== userId)); 
           setShowDeleteSuccessAlert(true);
         setTimeout(() => {
           setShowDeleteSuccessAlert(false);
