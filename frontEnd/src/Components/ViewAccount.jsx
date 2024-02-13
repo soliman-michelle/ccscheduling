@@ -153,7 +153,6 @@ const ViewAccount = () => {
       </div>
 
       <section className="home-section pt-2">
-        {/* Alert for successful deletion */}
      {showDeleteSuccessAlert && (
         <div className="alert alert-danger alert-dismissible fade show" role="alert">
           <strong>Success!</strong> User Deleted successfully!
