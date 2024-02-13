@@ -37,11 +37,11 @@ const Sidebar = ({ isSidebarOpen }) => {
   useEffect(() => {
     const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     if (token) {
-      axios.get('http://localhost:8081/', { withCredentials: true })
+      axios.get('https://ccsched.onrender.com/', { withCredentials: true })
         .then(response => {
           const username = response.data.username;
           // Fetch user's data including image URL by username
-          axios.get(`http://localhost:8081/userdata/${username}`)
+          axios.get(`https://ccsched.onrender.com/userdata/${username}`)
             .then(userDataResponse => {
               // Assuming you have stored user data in state
               setUserData(userDataResponse.data);
@@ -51,7 +51,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                 const user = userDataResponse.data[0];
                 // Assuming you have an <img> tag for displaying the image
                 return (
-                  <img src={`http://localhost:8081/${user.images}`} alt="Profile" style={{ width: '20px' }} />
+                  <img src={`https://ccsched.onrender.com/${user.images}`} alt="Profile" style={{ width: '20px' }} />
                 );
               }
             })
@@ -95,7 +95,7 @@ const Sidebar = ({ isSidebarOpen }) => {
       <div className = "row mt-4 mb-3">
     {Array.isArray(userData) && userData.map((user) => (
                       <div key={user.user_id} className = "d-flex align-items-center">
-                        <img src={`http://localhost:8081/${user.images}`} alt="Profile" className='avatar-img rounded-circle'
+                        <img src={`https://ccsched.onrender.com/${user.images}`} alt="Profile" className='avatar-img rounded-circle'
                                     width="50"
                                     height="50"
                         />
