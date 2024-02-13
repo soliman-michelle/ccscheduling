@@ -43,31 +43,45 @@ const LogIn = () => {
   
     if (Object.keys(errors).length === 0) {
       axios.post('https://ccsched.onrender.com/userlogin', values)
-      .then((res) => {
-        if (res.data.Status === 'Success') {
-          // Fetch user data based on the userId
-          axios.get(`https://ccsched.onrender.com/userdata/${username}`)
-            .then((response) => {
-              // Store user data in local storage or state management
-              localStorage.setItem('userData', JSON.stringify(response.data));
-              // Redirect to home page or perform other actions
-              navigate('/');
-            })
-            .catch((error) => {
-              console.error('Error fetching user data:', error);
-            });
-        } else {
-          alert('No data exist!');
-        }
-      })
-      .catch((error) => {
-        console.error('Login error:', error);
-      });
-    
+        .then((res) => {
+          if (res.data.Status === 'Success') {
+            // Fetch user data based on the userId
+            axios.get(`https://ccsched.onrender.com/userdata/${username}`)
+              .then((response) => {
+                // Store user data in local storage or state management
+                localStorage.setItem('userData', JSON.stringify(response.data));
+                // Redirect to home page or perform other actions
+                navigate('/');
+              })
+              .catch((error) => {
+                console.error('Error fetching user data:', error);
+              });
+          } else {
+            alert('No data exist!');
+          }
+        })
+        .catch((error) => {
+          // Handle login errors
+          if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error('Login error:', error.response.data);
+            // Set error message from the backend response
+            setErrors({ loginError: error.response.data.error });
+          } else if (error.request) {
+            // The request was made but no response was received
+            console.error('No response received:', error.request);
+            setErrors({ loginError: 'No response from server' });
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            console.error('Request setup error:', error.message);
+            setErrors({ loginError: 'Error setting up request' });
+          }
+        });
     } else {
       setErrors(errors);
     }
-  };
+  };    
   const backgroundStyle = {
     backgroundImage: 'url("background.png")', // Specify the URL as a string
     backgroundSize: 'cover',
