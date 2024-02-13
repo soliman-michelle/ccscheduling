@@ -25,7 +25,7 @@ const ViewAccount = () => {
   
       const fetchData = async () => {
         try {
-          const res = await axios.get("http://localhost:8081/user");
+          const res = await axios.get("https://ccsched.onrender.com/user");
           setUser(res.data);
         } catch (err) {
           console.error(err);
@@ -39,7 +39,7 @@ const ViewAccount = () => {
       const handleDeleteUser = async (userId) => {
         try {
           console.log(`Deleting user with ID: ${userId}`);
-          await axios.delete(`http://localhost:8081/user/` + userId + `/delete`);
+          await axios.delete(`https://ccsched.onrender.com/user/` + userId + `/delete`);
           console.log(`User with ID ${userId} deleted successfully`);
           setUser((prevUser) => prevUser.filter((userItem) => userItem.user_id !== userId)); // Update the filter condition
           setShowDeleteSuccessAlert(true);
