@@ -25,7 +25,7 @@ const ViewAccount = () => {
       };
   
       const handleAddUser = (newUser) => {
-        console.log(newUser); // Log the new user
+        console.log(newUser); 
         setUser([...user, newUser]);
         fetchData(); 
       };
